@@ -3,11 +3,12 @@ package com.gabinete.psicologico_api.model;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import java.time.LocalDate;
-import java.util.Map;
 
 @Entity
 @Table(name = "entrevista_psicologica")
@@ -22,6 +23,8 @@ public class EntrevistaPsicologica {
     
     @OneToOne
     @JoinColumn(name = "sesion_paciente_id", nullable = false, unique = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private SesionPaciente sesionPaciente;
     
     private LocalDate fecha;
@@ -42,15 +45,15 @@ public class EntrevistaPsicologica {
     
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "datos_familia", columnDefinition = "jsonb")
-    private Map<String, Object> datosFamilia;
+    private String datosFamilia;
     
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    private Map<String, Object> habitos;
+    private String habitos;
     
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    private Map<String, Object> sintomas;
+    private String sintomas;
     
     @Column(name = "total_score_estres")
     private Integer totalScoreEstres;
@@ -63,11 +66,7 @@ public class EntrevistaPsicologica {
     
     @PrePersist
     protected void onCreate() {
-        if (fecha == null) {
-            fecha = LocalDate.now();
-        }
-        if (version == null) {
-            version = 1;
-        }
+        if (fecha == null) fecha = LocalDate.now();
+        if (version == null) version = 1;
     }
 }

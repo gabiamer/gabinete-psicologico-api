@@ -1,3 +1,4 @@
+// src/main/java/com/gabinete/psicologico_api/model/Paciente.java
 package com.gabinete.psicologico_api.model;
 
 import jakarta.persistence.*;
@@ -23,6 +24,8 @@ public class Paciente {
     
     @Column(name = "fecha_nacimiento")
     private LocalDate fechaNacimiento;
+
+    private Integer edad;
     
     private Integer genero;
     
@@ -33,5 +36,5 @@ public class Paciente {
     private Integer estadoCivil;
     
     @Column(name = "tipo_paciente")
-    private Integer tipoPaciente; // 1: Universitario, 2: Externo
+    private Integer tipoPaciente;
 }

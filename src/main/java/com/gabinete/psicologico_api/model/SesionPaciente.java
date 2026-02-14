@@ -1,9 +1,12 @@
+// src\main\java\com\gabinete\psicologico_api\model\SesionPaciente.java
 package com.gabinete.psicologico_api.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
@@ -22,10 +25,14 @@ public class SesionPaciente {
     
     @ManyToOne
     @JoinColumn(name = "paciente_universitario_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private PacienteUniversitario pacienteUniversitario;
     
     @ManyToOne
-    @JoinColumn(name = "psicologo_id", nullable = false)
+    @JoinColumn(name = "psicologo_id", nullable = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Psicologo psicologo;
     
     @Column(nullable = false)
