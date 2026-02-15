@@ -1,3 +1,4 @@
+//src/main/java/com/gabinete/psicologico_api/model/EntrevistaPsicologica.java
 package com.gabinete.psicologico_api.model;
 
 import jakarta.persistence.*;
@@ -50,9 +51,10 @@ public class EntrevistaPsicologica {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private String habitos;
-    
+
+    // 👈 SOLO UNA VEZ (eliminé la duplicación)
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
+    @Column(name = "sintomas", columnDefinition = "jsonb")
     private String sintomas;
     
     @Column(name = "total_score_estres")
