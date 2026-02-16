@@ -1,4 +1,3 @@
-// src/main/java/com/gabinete/psicologico_api/controller/OrientacionVocacionalController.java
 package com.gabinete.psicologico_api.controller;
 
 import com.gabinete.psicologico_api.dto.OrientacionVocacionalDTO;

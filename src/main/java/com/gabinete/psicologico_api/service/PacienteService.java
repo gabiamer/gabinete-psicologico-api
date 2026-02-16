@@ -1,4 +1,3 @@
-// src/main/java/com/gabinete/psicologico_api/service/PacienteService.java
 package com.gabinete.psicologico_api.service;
 
 import com.gabinete.psicologico_api.dto.PacienteUniversitarioDTO;

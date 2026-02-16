@@ -1,4 +1,3 @@
-// src/main/java/com/gabinete/psicologico_api/controller/SesionController.java
 package com.gabinete.psicologico_api.controller;
 
 import com.gabinete.psicologico_api.model.SesionPaciente;
@@ -47,7 +46,6 @@ public class SesionController {
         
         try {
             // Por ahora retornar un mensaje simulado
-            // Implementarás la lógica completa después
             
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);

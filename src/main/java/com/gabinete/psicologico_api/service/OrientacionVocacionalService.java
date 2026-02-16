@@ -1,4 +1,3 @@
-// src/main/java/com/gabinete/psicologico_api/service/OrientacionVocacionalService.java
 package com.gabinete.psicologico_api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -1,4 +1,3 @@
-// src/main/java/com/gabinete/psicologico_api/model/Paciente.java
 package com.gabinete.psicologico_api.model;
 
 import jakarta.persistence.*;

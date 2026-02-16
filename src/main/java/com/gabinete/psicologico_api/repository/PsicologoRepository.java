@@ -1,5 +1,3 @@
-//src/main/java/com/gabinete/psicologico_api/repository/PsicologoRepository.java
-
 package com.gabinete.psicologico_api.repository;
 
 import com.gabinete.psicologico_api.model.Psicologo;

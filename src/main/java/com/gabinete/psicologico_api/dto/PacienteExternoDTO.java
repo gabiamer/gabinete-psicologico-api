@@ -1,4 +1,3 @@
-// src/main/java/com/gabinete/psicologico_api/dto/PacienteExternoDTO.java
 package com.gabinete.psicologico_api.dto;
 
 import lombok.Data;

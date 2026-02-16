@@ -1,4 +1,3 @@
-//  src/main/java/com/gabinete/psicologico_api/controller/PsicologoController.java
 package com.gabinete.psicologico_api.controller;
 
 import com.gabinete.psicologico_api.model.Psicologo;

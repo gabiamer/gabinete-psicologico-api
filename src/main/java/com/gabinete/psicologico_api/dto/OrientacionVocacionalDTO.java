@@ -1,4 +1,3 @@
-// src/main/java/com/gabinete/psicologico_api/dto/OrientacionVocacionalDTO.java
 package com.gabinete.psicologico_api.dto;
 
 import lombok.Data;
