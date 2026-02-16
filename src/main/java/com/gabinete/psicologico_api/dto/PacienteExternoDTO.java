@@ -9,7 +9,7 @@ public class PacienteExternoDTO {
     private PersonDTO person;
     private LocalDate fechaNacimiento;
     private Integer edad;
-    private String genero;
+    private Integer genero;
     private String domicilio;
     private Integer estadoCivil;
     private String escuela;
