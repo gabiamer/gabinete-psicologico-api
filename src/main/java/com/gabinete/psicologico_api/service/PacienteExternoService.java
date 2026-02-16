@@ -1,7 +1,7 @@
-// src/main/java/com/gabinete/psicologico_api/service/PacienteService.java
+// src/main/java/com/gabinete/psicologico_api/service/PacienteExternoService.java
 package com.gabinete.psicologico_api.service;
 
-import com.gabinete.psicologico_api.dto.PacienteUniversitarioDTO;
+import com.gabinete.psicologico_api.dto.PacienteExternoDTO;
 import com.gabinete.psicologico_api.model.*;
 import com.gabinete.psicologico_api.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-public class PacienteService {
+public class PacienteExternoService {
     
     @Autowired
     private PersonRepository personRepository;
@@ -20,13 +20,12 @@ public class PacienteService {
     private PacienteRepository pacienteRepository;
     
     @Autowired
-    private PacienteUniversitarioRepository pacienteUniversitarioRepository;
-
-    @Autowired
-    private PsicologoRepository psicologoRepository;
+    private PacienteExternoRepository pacienteExternoRepository;
     
     @Transactional
-    public PacienteUniversitario crearPacienteUniversitario(PacienteUniversitarioDTO dto) {
+    public PacienteExterno crearPacienteExterno(PacienteExternoDTO dto) {
+        System.out.println("=== Creando Paciente Externo ===");
+        
         // 1. Crear Person
         Person person = new Person();
         person.setPrimerNombre(dto.getPerson().getPrimerNombre());
@@ -35,6 +34,7 @@ public class PacienteService {
         person.setApellidoMaterno(dto.getPerson().getApellidoMaterno());
         person.setCelular(dto.getPerson().getCelular());
         person = personRepository.save(person);
+        System.out.println("Person guardado con ID: " + person.getId());
         
         // 2. Crear Paciente
         Paciente paciente = new Paciente();
@@ -44,30 +44,28 @@ public class PacienteService {
         paciente.setGenero(dto.getGenero());
         paciente.setDomicilio(dto.getDomicilio());
         paciente.setEstadoCivil(dto.getEstadoCivil());
-        paciente.setTipoPaciente(1);
+        paciente.setTipoPaciente(2); // 2 = Paciente Externo
         paciente = pacienteRepository.save(paciente);
+        System.out.println("Paciente guardado con ID: " + paciente.getId());
         
-        // 3. Crear PacienteUniversitario
-        PacienteUniversitario pu = new PacienteUniversitario();
-        pu.setPaciente(paciente);
-        pu.setSemestre(dto.getSemestre());
-        pu.setDerivadoPor(dto.getDerivadoPor());
-
-        // 4. Asignar psicólogo
-        if (dto.getPsicologoId() != null) {
-            psicologoRepository.findById(dto.getPsicologoId())
-                    .ifPresent(pu::setPsicologo);
-        }
+        // 3. Crear PacienteExterno
+        PacienteExterno pe = new PacienteExterno();
+        pe.setPaciente(paciente);
+        pe.setEscuela(dto.getEscuela());
+        pe.setAnio(dto.getAnio());
+        pe.setCorreo(dto.getCorreo());
+        pe = pacienteExternoRepository.save(pe);
+        System.out.println("PacienteExterno guardado con ID: " + pe.getId());
         
-        return pacienteUniversitarioRepository.save(pu);
+        return pe;
     }
 
-    public List<PacienteUniversitario> buscarPacientes(String termino) {
-        return pacienteUniversitarioRepository.buscarPorTermino(termino);
+    public List<PacienteExterno> buscarPacientes(String termino) {
+        return pacienteExternoRepository.buscarPorTermino(termino);
     }
 
-    public PacienteUniversitario obtenerPorId(Long id) {
-        return pacienteUniversitarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Paciente no encontrado: " + id));
+    public PacienteExterno obtenerPorId(Long id) {
+        return pacienteExternoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Paciente externo no encontrado: " + id));
     }
 }

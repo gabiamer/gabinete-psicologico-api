@@ -52,7 +52,6 @@ public class EntrevistaPsicologica {
     @Column(columnDefinition = "jsonb")
     private String habitos;
 
-    // 👈 SOLO UNA VEZ (eliminé la duplicación)
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "sintomas", columnDefinition = "jsonb")
     private String sintomas;

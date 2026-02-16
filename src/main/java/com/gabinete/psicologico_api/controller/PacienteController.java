@@ -13,7 +13,6 @@ import com.gabinete.psicologico_api.dto.AntecedentesDTO;
 import com.gabinete.psicologico_api.model.EntrevistaPsicologica;
 import com.gabinete.psicologico_api.service.EntrevistaService;
 
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +30,44 @@ public class PacienteController {
 
     @Autowired
     private PacienteUniversitarioRepository pacienteUniversitarioRepository;
+    
+    // Endpoint de búsqueda
+    @GetMapping("/buscar")
+    public ResponseEntity<?> buscarPacientes(@RequestParam String q) {
+        try {
+            List<PacienteUniversitario> pacientes = pacienteService.buscarPacientes(q);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", pacientes);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", "Error al buscar pacientes: " + e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    // Obtiene paciente por ID (para el frontend)
+    @GetMapping("/{id}")
+    public ResponseEntity<?> obtenerPaciente(@PathVariable Long id) {
+        try {
+            PacienteUniversitario paciente = pacienteService.obtenerPorId(id);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", paciente);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", "Paciente no encontrado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
+    }
     
     // CREATE - Crear paciente universitario
     @PostMapping("/universitario")
@@ -142,7 +179,7 @@ public class PacienteController {
         return ResponseEntity.ok(response);
     }
 
-    //GUARDAR ANTECEDENTES
+    // GUARDAR ANTECEDENTES
     @PostMapping("/universitario/{id}/historia-clinica")
     public ResponseEntity<Map<String, Object>> guardarHistoriaClinica(
             @PathVariable Long id,
@@ -165,5 +202,4 @@ public class PacienteController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
-
 }

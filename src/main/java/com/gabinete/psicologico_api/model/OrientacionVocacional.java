@@ -1,13 +1,15 @@
+// src/main/java/com/gabinete/psicologico_api/model/OrientacionVocacional.java
 package com.gabinete.psicologico_api.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import java.time.LocalDate;
-import java.util.Map;
 
 @Entity
 @Table(name = "orientacion_vocacional")
@@ -22,6 +24,8 @@ public class OrientacionVocacional {
     
     @ManyToOne
     @JoinColumn(name = "paciente_externo_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private PacienteExterno pacienteExterno;
     
     private LocalDate fecha;
@@ -31,12 +35,10 @@ public class OrientacionVocacional {
     
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb", nullable = false)
-    private Map<String, Object> respuestas;
+    private String respuestas;
     
     @PrePersist
     protected void onCreate() {
-        if (fecha == null) {
-            fecha = LocalDate.now();
-        }
+        if (fecha == null) fecha = LocalDate.now();
     }
 }

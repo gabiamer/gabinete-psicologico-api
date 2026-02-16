@@ -1,19 +1,18 @@
-// src/main/java/com/gabinete/psicologico_api/dto/PacienteUniversitarioDTO.java
+// src/main/java/com/gabinete/psicologico_api/dto/PacienteExternoDTO.java
 package com.gabinete.psicologico_api.dto;
 
 import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class PacienteUniversitarioDTO {
+public class PacienteExternoDTO {
     private PersonDTO person;
     private LocalDate fechaNacimiento;
     private Integer edad;
     private String genero;
     private String domicilio;
     private Integer estadoCivil;
-    private Integer semestre;
-    private String derivadoPor;
-    private Long carreraId;
-    private Long psicologoId;
+    private String escuela;
+    private Integer anio;
+    private String correo;
 }
