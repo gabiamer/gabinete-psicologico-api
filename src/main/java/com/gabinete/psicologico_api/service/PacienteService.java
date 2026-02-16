@@ -23,6 +23,13 @@ public class PacienteService {
 
     @Autowired
     private PsicologoRepository psicologoRepository;
+
+    // 👈 AGREGAR ESTOS DOS
+    @Autowired
+    private CarreraRepository carreraRepository;
+
+    @Autowired
+    private EstudianteCarreraRepository estudianteCarreraRepository;
     
     @Transactional
     public PacienteUniversitario crearPacienteUniversitario(PacienteUniversitarioDTO dto) {
@@ -58,7 +65,63 @@ public class PacienteService {
                     .ifPresent(pu::setPsicologo);
         }
         
-        return pacienteUniversitarioRepository.save(pu);
+        // Guardar primero el PacienteUniversitario
+        pu = pacienteUniversitarioRepository.save(pu);
+        
+        // 5. Guardar relación estudiante-carrera
+        if (dto.getCarreraId() != null) {
+            Carrera carrera = carreraRepository.findById(dto.getCarreraId())
+                    .orElseThrow(() -> new RuntimeException("Carrera no encontrada"));
+            
+            EstudianteCarrera ec = new EstudianteCarrera();
+            ec.setPacienteUniversitario(pu);
+            ec.setCarrera(carrera);
+            estudianteCarreraRepository.save(ec);
+        }
+    
+        return pu;
+    }
+
+    @Transactional
+    public PacienteUniversitario actualizarPacienteUniversitario(Long id, PacienteUniversitarioDTO dto) {
+        System.out.println("=== Actualizando Paciente Universitario ID: " + id);
+        
+        // Buscar el paciente universitario existente
+        PacienteUniversitario pu = pacienteUniversitarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Paciente universitario no encontrado: " + id));
+        
+        // Actualizar Person
+        Person person = pu.getPaciente().getPerson();
+        person.setPrimerNombre(dto.getPerson().getPrimerNombre());
+        person.setSegundoNombre(dto.getPerson().getSegundoNombre());
+        person.setApellidoPaterno(dto.getPerson().getApellidoPaterno());
+        person.setApellidoMaterno(dto.getPerson().getApellidoMaterno());
+        person.setCelular(dto.getPerson().getCelular());
+        personRepository.save(person);
+        
+        // Actualizar Paciente
+        Paciente paciente = pu.getPaciente();
+        paciente.setFechaNacimiento(dto.getFechaNacimiento());
+        paciente.setEdad(dto.getEdad());
+        paciente.setGenero(dto.getGenero());
+        paciente.setDomicilio(dto.getDomicilio());
+        paciente.setEstadoCivil(dto.getEstadoCivil());
+        pacienteRepository.save(paciente);
+        
+        // Actualizar PacienteUniversitario
+        pu.setSemestre(dto.getSemestre());
+        pu.setDerivadoPor(dto.getDerivadoPor());
+        
+        // Actualizar psicólogo si cambió
+        if (dto.getPsicologoId() != null) {
+            psicologoRepository.findById(dto.getPsicologoId())
+                    .ifPresent(pu::setPsicologo);
+        }
+        
+        PacienteUniversitario actualizado = pacienteUniversitarioRepository.save(pu);
+        System.out.println("=== Paciente actualizado correctamente");
+        
+        return actualizado;
     }
 
     public List<PacienteUniversitario> buscarPacientes(String termino) {

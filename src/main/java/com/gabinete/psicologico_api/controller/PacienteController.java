@@ -170,6 +170,31 @@ public class PacienteController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
+    // Actualizar paciente universitario
+    @PutMapping("/universitario/{id}")
+    public ResponseEntity<Map<String, Object>> actualizarPacienteUniversitario(
+            @PathVariable Long id,
+            @RequestBody PacienteUniversitarioDTO dto) {
+        
+        try {
+            PacienteUniversitario paciente = pacienteService.actualizarPacienteUniversitario(id, dto);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Paciente actualizado exitosamente");
+            response.put("data", paciente);
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Error al actualizar paciente: " + e.getMessage());
+            
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
     
     @GetMapping("/test")
     public ResponseEntity<Map<String, String>> test() {
