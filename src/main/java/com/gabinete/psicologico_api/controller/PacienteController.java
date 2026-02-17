@@ -1,3 +1,4 @@
+//src/main/java/com/gabinete/psicologico_api/controller/PacienteController.java
 package com.gabinete.psicologico_api.controller;
 
 import com.gabinete.psicologico_api.dto.PacienteUniversitarioDTO;
@@ -12,6 +13,7 @@ import com.gabinete.psicologico_api.dto.AntecedentesDTO;
 import com.gabinete.psicologico_api.model.EntrevistaPsicologica;
 import com.gabinete.psicologico_api.service.EntrevistaService;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,11 +32,32 @@ public class PacienteController {
     @Autowired
     private PacienteUniversitarioRepository pacienteUniversitarioRepository;
     
-    // Endpoint de búsqueda
+    // Endpoint de búsqueda combinada (por término y/o fecha)
     @GetMapping("/buscar")
-    public ResponseEntity<?> buscarPacientes(@RequestParam String q) {
+    public ResponseEntity<?> buscarPacientes(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String fecha) {
         try {
-            List<PacienteUniversitario> pacientes = pacienteService.buscarPacientes(q);
+            List<PacienteUniversitario> pacientes;
+            
+            // Si hay fecha, buscar por fecha (con o sin término)
+            if (fecha != null && !fecha.trim().isEmpty()) {
+                LocalDate fechaBusqueda = LocalDate.parse(fecha);
+                
+                if (q != null && !q.trim().isEmpty()) {
+                    // Buscar por término Y fecha
+                    pacientes = pacienteService.buscarPorTerminoYFecha(q, fechaBusqueda);
+                } else {
+                    // Buscar solo por fecha
+                    pacientes = pacienteService.buscarPorFecha(fechaBusqueda);
+                }
+            } else if (q != null && !q.trim().isEmpty()) {
+                // Buscar solo por término (comportamiento actual)
+                pacientes = pacienteService.buscarPacientes(q);
+            } else {
+                // Sin parámetros, devolver lista vacía
+                pacientes = List.of();
+            }
             
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);

@@ -1,3 +1,4 @@
+//src/main/java/com/gabinete/psicologico_api/service/PacienteExternoService.java
 package com.gabinete.psicologico_api.service;
 
 import com.gabinete.psicologico_api.dto.PacienteExternoDTO;

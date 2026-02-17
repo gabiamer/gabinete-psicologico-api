@@ -1,3 +1,5 @@
+//src/main/java/com/gabinete/psicologico_api/service/PacienteService.java
+
 package com.gabinete.psicologico_api.service;
 
 import com.gabinete.psicologico_api.dto.PacienteUniversitarioDTO;
@@ -7,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -24,7 +27,6 @@ public class PacienteService {
     @Autowired
     private PsicologoRepository psicologoRepository;
 
-    // 👈 AGREGAR ESTOS DOS
     @Autowired
     private CarreraRepository carreraRepository;
 
@@ -126,6 +128,14 @@ public class PacienteService {
 
     public List<PacienteUniversitario> buscarPacientes(String termino) {
         return pacienteUniversitarioRepository.buscarPorTermino(termino);
+    }
+
+    public List<PacienteUniversitario> buscarPorFecha(LocalDate fecha) {
+        return pacienteUniversitarioRepository.buscarPorFechaSesion(fecha);
+    }
+
+    public List<PacienteUniversitario> buscarPorTerminoYFecha(String termino, LocalDate fecha) {
+        return pacienteUniversitarioRepository.buscarPorTerminoYFecha(termino, fecha);
     }
 
     public PacienteUniversitario obtenerPorId(Long id) {

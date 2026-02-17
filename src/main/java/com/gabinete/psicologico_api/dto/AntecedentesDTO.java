@@ -1,3 +1,4 @@
+//src/main/java/com/gabinete/psicologico_api/dto/AntecedentesDTO.java
 package com.gabinete.psicologico_api.dto;
 
 import lombok.Data;
@@ -65,7 +66,13 @@ public class AntecedentesDTO {
 
     private String relatoAcusacionDetencion;
 
+    // Evaluación (paso 6)
+    private String gravedad;
+    private String tipologias;
+    
     // Acuerdos
+    private String notasSesion;
+    private String objetivosSesion;
     private String acuerdosEstablecidos;
     private String proximaSesionFecha;
     private String proximaSesionHora;

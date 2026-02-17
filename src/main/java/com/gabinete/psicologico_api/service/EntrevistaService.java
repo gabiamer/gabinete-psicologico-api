@@ -1,3 +1,4 @@
+//src/main/java/com/gabinete/psicologico_api/service/EntrevistaService.java
 package com.gabinete.psicologico_api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,10 +41,86 @@ public class EntrevistaService {
         sesion.setPsicologo(pu.getPsicologo());
         sesion.setFecha(LocalDateTime.now());
         sesion.setTipo("Primera Sesión");
+        
+        // **Crear objeto con todos los datos de la entrevista inicial**
+        Map<String, Object> acuerdosCompletos = new HashMap<>();
+        
+        // Datos básicos
+        acuerdosCompletos.put("ultimaVezBien", dto.getUltimaVezBien());
+        acuerdosCompletos.put("desarrolloSintomas", dto.getDesarrolloSintomas());
+        acuerdosCompletos.put("antecedentesFamiliares", dto.getAntecedentesFamiliares());
+        
+        // Funciones orgánicas
+        acuerdosCompletos.put("sueno", dto.getSueno());
+        acuerdosCompletos.put("apetito", dto.getApetito());
+        acuerdosCompletos.put("sed", dto.getSed());
+        acuerdosCompletos.put("defecacion", dto.getDefecacion());
+        
+        // Situación actual
+        acuerdosCompletos.put("conQuienVive", dto.getConQuienVive());
+        acuerdosCompletos.put("personaReferencia", dto.getPersonaReferencia());
+        acuerdosCompletos.put("celularReferencia", dto.getCelularReferencia());
+        
+        // Padre
+        acuerdosCompletos.put("nombrePadre", dto.getNombrePadre());
+        acuerdosCompletos.put("ocupacionPadre", dto.getOcupacionPadre());
+        acuerdosCompletos.put("enfermedadPadre", dto.getEnfermedadPadre());
+        acuerdosCompletos.put("relacionPadre", dto.getRelacionPadre());
+        
+        // Madre
+        acuerdosCompletos.put("nombreMadre", dto.getNombreMadre());
+        acuerdosCompletos.put("ocupacionMadre", dto.getOcupacionMadre());
+        acuerdosCompletos.put("enfermedadMadre", dto.getEnfermedadMadre());
+        acuerdosCompletos.put("relacionMadre", dto.getRelacionMadre());
+        
+        // Hermanos
+        acuerdosCompletos.put("numeroHermanos", dto.getNumeroHermanos());
+        acuerdosCompletos.put("relatoHermanos", dto.getRelatoHermanos());
+        
+        // Sintomatologías
+        acuerdosCompletos.put("sintomatologias", dto.getSintomas());
+        acuerdosCompletos.put("totalScoreEstres", dto.getTotalScoreEstres());
+        acuerdosCompletos.put("totalScoreAnsiedad", dto.getTotalScoreAnsiedad());
+        acuerdosCompletos.put("totalScoreDepresion", dto.getTotalScoreDepresion());
+        
+        // Universidad
+        acuerdosCompletos.put("nivelSatisfaccion", dto.getNivelSatisfaccion());
+        acuerdosCompletos.put("rendimiento", dto.getRendimiento());
+        acuerdosCompletos.put("estresUniversitario", dto.getEstresUniversitario());
+        acuerdosCompletos.put("interaccionSocial", dto.getInteraccionSocial());
+        acuerdosCompletos.put("cambioCarreras", dto.getCambioCarreras());
+        acuerdosCompletos.put("motivosCambio", dto.getMotivosCambio());
+        acuerdosCompletos.put("relatoUniversidad", dto.getRelatoUniversidad());
+        
+        // Hábitos
+        acuerdosCompletos.put("consumoAlcohol", dto.getConsumoAlcohol());
+        acuerdosCompletos.put("frecuenciaAlcohol", dto.getFrecuenciaAlcohol());
+        acuerdosCompletos.put("consumoTabaco", dto.getConsumoTabaco());
+        acuerdosCompletos.put("frecuenciaTabaco", dto.getFrecuenciaTabaco());
+        acuerdosCompletos.put("consumoDrogas", dto.getConsumoDrogas());
+        acuerdosCompletos.put("frecuenciaDrogas", dto.getFrecuenciaDrogas());
+        acuerdosCompletos.put("relatoAcusacionDetencion", dto.getRelatoAcusacionDetencion());
+        
+        // Evaluación (paso 6)
+        acuerdosCompletos.put("gravedad", dto.getGravedad());
+        acuerdosCompletos.put("tipologias", dto.getTipologias());
+        
+        // Sesión inicial (paso 7)
+        acuerdosCompletos.put("notasSesion", dto.getNotasSesion());
+        acuerdosCompletos.put("objetivosSesion", dto.getObjetivosSesion());
+        acuerdosCompletos.put("acuerdosEstablecidos", dto.getAcuerdosEstablecidos());
+        acuerdosCompletos.put("proximaSesionFecha", dto.getProximaSesionFecha());
+        acuerdosCompletos.put("proximaSesionHora", dto.getProximaSesionHora());
+        
+        // Convertir a JSON y guardar en el campo acuerdos
+        String acuerdosJson = objectMapper.writeValueAsString(acuerdosCompletos);
+        sesion.setAcuerdos(acuerdosJson);
+        
         sesionPacienteRepository.save(sesion);
-        System.out.println("=== PASO 2 OK: Sesion id=" + sesion.getId());
+        System.out.println("=== PASO 2 OK: Sesion id=" + sesion.getId() + " con acuerdos completos");
 
-        System.out.println("=== PASO 3: Preparando datos");
+        // El resto del código para guardar en EntrevistaPsicologica permanece igual...
+        System.out.println("=== PASO 3: Preparando datos para EntrevistaPsicologica");
         
         // Funciones orgánicas
         Map<String, Object> funcionesOrganicas = new HashMap<>();
@@ -80,7 +157,7 @@ public class EntrevistaService {
         
         String familiaJson = objectMapper.writeValueAsString(familia);
 
-        // Sintomas (convertir Map a JSON)
+        // Sintomas
         String sintomasJson = null;
         if (dto.getSintomas() != null) {
             sintomasJson = objectMapper.writeValueAsString(dto.getSintomas());
@@ -97,19 +174,15 @@ public class EntrevistaService {
         entrevista.setHabitos(habitosJson);
         entrevista.setDatosFamilia(familiaJson);
         
-        // Guardar sintomas y scores
         entrevista.setSintomas(sintomasJson);
         entrevista.setTotalScoreEstres(dto.getTotalScoreEstres());
         entrevista.setTotalScoreAnsiedad(dto.getTotalScoreAnsiedad());
         entrevista.setTotalScoreDepresion(dto.getTotalScoreDepresion());
         
-        // Relato Universidad (Sección VI)
         entrevista.setRelatoUniversidad(dto.getRelatoUniversidad());
 
-        // Hábitos
+        // Hábitos completos
         Map<String, Object> habitos = new HashMap<>();
-
-        // Consumo de sustancias con sus frecuencias
         Map<String, Object> alcohol = new HashMap<>();
         alcohol.put("descripcion", dto.getConsumoAlcohol());
         alcohol.put("frecuencia", dto.getFrecuenciaAlcohol());
@@ -126,8 +199,6 @@ public class EntrevistaService {
         habitos.put("drogas", drogas);
 
         habitos.put("relatoAcusacionDetencion", dto.getRelatoAcusacionDetencion());
-
-        // Universidad
         habitos.put("nivelSatisfaccion", dto.getNivelSatisfaccion());
         habitos.put("rendimiento", dto.getRendimiento());
         habitos.put("estresUniversitario", dto.getEstresUniversitario());

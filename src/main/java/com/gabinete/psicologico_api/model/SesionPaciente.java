@@ -1,5 +1,8 @@
+//src/main/java/com/gabinete/psicologico_api/model/SesionPaciente.java
 package com.gabinete.psicologico_api.model;
 
+import com.fasterxml.jackson.annotation.JsonRawValue;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +12,6 @@ import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
-import java.util.Map;
 
 @Entity
 @Table(name = "sesion_paciente")
@@ -42,7 +44,7 @@ public class SesionPaciente {
     
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    private Map<String, Object> acuerdos;
+    private String acuerdos; // Cambiado de Map<String, Object> a String
     
     @PrePersist
     protected void onCreate() {
