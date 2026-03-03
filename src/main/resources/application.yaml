@@ -6,7 +6,7 @@ spring:
     name: psicologico-api
   
   datasource:
-    url: jdbc:postgresql://localhost:5432/gabinete_psicologico
+    url: jdbc:postgresql://localhost:5437/gabinete_psicologico
     username: postgres
     password: 1234567
     driver-class-name: org.postgresql.Driver

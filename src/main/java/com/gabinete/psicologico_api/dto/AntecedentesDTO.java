@@ -2,6 +2,7 @@
 package com.gabinete.psicologico_api.dto;
 
 import lombok.Data;
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -35,7 +36,7 @@ public class AntecedentesDTO {
     private String relacionMadre;
     
     // Hermanos
-    private Integer numeroHermanos;
+    private String numeroHermanos;
     private String relatoHermanos;
     
     // Sintomatologías
@@ -68,7 +69,7 @@ public class AntecedentesDTO {
 
     // Evaluación (paso 6)
     private String gravedad;
-    private String tipologias;
+    private List<String> tipologias;
     
     // Acuerdos
     private String notasSesion;
