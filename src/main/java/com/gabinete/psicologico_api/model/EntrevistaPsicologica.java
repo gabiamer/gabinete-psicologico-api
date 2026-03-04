@@ -1,3 +1,4 @@
+//src/main/java/com/gabinete/psicologico_api/model/EntrevistaPsicologica.java
 package com.gabinete.psicologico_api.model;
 
 import jakarta.persistence.*;
@@ -63,6 +64,10 @@ public class EntrevistaPsicologica {
     
     @Column(name = "total_score_depresion")
     private Integer totalScoreDepresion;
+    
+    // NUEVO: Campo acuerdos movido desde SesionPaciente
+    @Column(columnDefinition = "TEXT")
+    private String acuerdos;
     
     @PrePersist
     protected void onCreate() {

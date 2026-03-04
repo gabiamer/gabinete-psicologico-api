@@ -35,6 +35,13 @@ public class PacienteService {
     
     @Transactional
     public PacienteUniversitario crearPacienteUniversitario(PacienteUniversitarioDTO dto) {
+        
+        // VALIDACIÓN: Al menos un apellido es obligatorio
+        if ((dto.getPerson().getApellidoPaterno() == null || dto.getPerson().getApellidoPaterno().trim().isEmpty()) 
+            && (dto.getPerson().getApellidoMaterno() == null || dto.getPerson().getApellidoMaterno().trim().isEmpty())) {
+            throw new RuntimeException("Debe proporcionar al menos un apellido (paterno o materno)");
+        }
+            
         // 1. Crear Person
         Person person = new Person();
         person.setPrimerNombre(dto.getPerson().getPrimerNombre());

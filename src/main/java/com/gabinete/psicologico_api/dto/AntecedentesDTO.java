@@ -7,16 +7,8 @@ import java.util.Map;
 
 @Data
 public class AntecedentesDTO {
-    // Situación actual
-    private String ultimaVezBien;
-    private String desarrolloSintomas;
-    private String antecedentesFamiliares;
-    
-    // Funciones orgánicas
-    private String sueno;
-    private String apetito;
-    private String sed;
-    private String defecacion;
+    // Campo único para motivo y antecedentes
+    private String motivoConsulta;
     
     // Historia familiar
     private String conQuienVive;
@@ -40,17 +32,12 @@ public class AntecedentesDTO {
     private String relatoHermanos;
     
     // Sintomatologías
-    private Map<String, Object> sintomas; // Contiene estres, ansiedad, depresion (arrays)
+    private Map<String, Object> sintomas;
     private Integer totalScoreEstres;
     private Integer totalScoreAnsiedad;
     private Integer totalScoreDepresion;
 
     // Universidad
-    private String cursoActual;
-    private Integer nivelSatisfaccion;
-    private Integer rendimiento;
-    private Integer estresUniversitario;
-    private Integer interaccionSocial;
     private String cambioCarreras;
     private String motivosCambio;
     private String relatoUniversidad;
@@ -58,23 +45,19 @@ public class AntecedentesDTO {
     // Hábitos
     private String consumoAlcohol;
     private Integer frecuenciaAlcohol;
-
     private String consumoTabaco;
     private Integer frecuenciaTabaco;
-
     private String consumoDrogas;
     private Integer frecuenciaDrogas;
-
     private String relatoAcusacionDetencion;
 
-    // Evaluación (paso 6)
+    // Evaluación (paso 7)
     private String gravedad;
     private List<String> tipologias;
     
-    // Acuerdos
-    private String notasSesion;
-    private String objetivosSesion;
+    // Acuerdos (paso 6) - CAMPOS ELIMINADOS: notasSesion, objetivosSesion
     private String acuerdosEstablecidos;
     private String proximaSesionFecha;
     private String proximaSesionHora;
+    private String historiaClinica;
 }

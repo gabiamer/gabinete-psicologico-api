@@ -1,16 +1,12 @@
 //src/main/java/com/gabinete/psicologico_api/model/SesionPaciente.java
 package com.gabinete.psicologico_api.model;
 
-import com.fasterxml.jackson.annotation.JsonRawValue;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.EqualsAndHashCode;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
 
 @Entity
@@ -39,12 +35,8 @@ public class SesionPaciente {
     @Column(nullable = false)
     private LocalDateTime fecha;
     
-    @Column(length = 255)
-    private String tipo;
-    
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private String acuerdos; // Cambiado de Map<String, Object> a String
+    @Column(columnDefinition = "TEXT")
+    private String acuerdos;
     
     @PrePersist
     protected void onCreate() {

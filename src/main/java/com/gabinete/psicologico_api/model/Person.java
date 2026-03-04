@@ -1,3 +1,4 @@
+//src/main/java/com/gabinete/psicologico_api/model/Person.java
 package com.gabinete.psicologico_api.model;
 
 import jakarta.persistence.*;
@@ -16,18 +17,20 @@ public class Person {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(name = "primer_nombre", nullable = false, length = 100)
+    @Column(name = "primer_nombre", nullable = false)
     private String primerNombre;
     
-    @Column(name = "segundo_nombre", length = 100)
+    @Column(name = "segundo_nombre")
     private String segundoNombre;
     
-    @Column(name = "apellido_paterno", nullable = false, length = 100)
+    // CAMBIADO: Ya no es nullable=false
+    @Column(name = "apellido_paterno")
     private String apellidoPaterno;
     
-    @Column(name = "apellido_materno", length = 100)
+    // CAMBIADO: Ya no es nullable=false
+    @Column(name = "apellido_materno")
     private String apellidoMaterno;
     
-    @Column(length = 20)
+    @Column
     private String celular;
 }
