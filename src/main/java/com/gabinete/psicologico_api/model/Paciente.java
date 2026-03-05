@@ -26,9 +26,7 @@ public class Paciente {
     private LocalDate fechaNacimiento;
 
     private Integer edad;
-    
-    private Integer genero;
-    
+
     @Column(length = 255)
     private String domicilio;
     

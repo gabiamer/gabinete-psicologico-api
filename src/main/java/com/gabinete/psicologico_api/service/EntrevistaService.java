@@ -26,27 +26,24 @@ public class EntrevistaService {
     @Autowired
     private EntrevistaPsicologicaRepository entrevistaPsicologicaRepository;
 
+    @Autowired
+    private HistorialClinicoRepository historialClinicoRepository;
+
     @Transactional
     public Long guardarAntecedentes(Long pacienteUniversitarioId, AntecedentesDTO dto) throws Exception {
 
-        System.out.println("=== PASO 1: Buscando paciente " + pacienteUniversitarioId);
         PacienteUniversitario pu = pacienteUniversitarioRepository
                 .findById(pacienteUniversitarioId)
                 .orElseThrow(() -> new RuntimeException("Paciente no encontrado: " + pacienteUniversitarioId));
 
-        System.out.println("=== PASO 2: Creando sesion");
+        // 1. Crear sesion
         SesionPaciente sesion = new SesionPaciente();
         sesion.setPacienteUniversitario(pu);
         sesion.setPsicologo(pu.getPsicologo());
         sesion.setFecha(LocalDateTime.now());
-        // CAMPO ELIMINADO: sesion.setTipo("Primera Sesión")
-
         sesionPacienteRepository.save(sesion);
-        System.out.println("=== PASO 2 OK: Sesion id=" + sesion.getId());
 
-        System.out.println("=== PASO 3: Preparando datos para EntrevistaPsicologica");
-
-        // Historia familiar
+        // 2. Historia familiar (JSONB)
         Map<String, Object> familia = new HashMap<>();
         familia.put("conQuienVive", dto.getConQuienVive());
         familia.put("personaReferencia", dto.getPersonaReferencia());
@@ -71,15 +68,22 @@ public class EntrevistaService {
         hermanos.put("relato", dto.getRelatoHermanos());
         familia.put("hermanos", hermanos);
 
-        String familiaJson = objectMapper.writeValueAsString(familia);
+        String historiaFamiliarJson = objectMapper.writeValueAsString(familia);
 
-        // Sintomas
+        // 3. Relato universidad (JSONB)
+        Map<String, Object> universidad = new HashMap<>();
+        universidad.put("cambioCarreras", dto.getCambioCarreras());
+        universidad.put("motivosCambio", dto.getMotivosCambio());
+        universidad.put("relatoGeneral", dto.getRelatoUniversidad());
+        String relatoUniversidadJson = objectMapper.writeValueAsString(universidad);
+
+        // 4. Sintomas
         String sintomasJson = null;
         if (dto.getSintomas() != null) {
             sintomasJson = objectMapper.writeValueAsString(dto.getSintomas());
         }
 
-        // Hábitos
+        // 5. Habitos (solo consumo y situaciones legales, sin datos de carrera)
         Map<String, Object> habitos = new HashMap<>();
         Map<String, Object> alcohol = new HashMap<>();
         alcohol.put("descripcion", dto.getConsumoAlcohol());
@@ -97,67 +101,39 @@ public class EntrevistaService {
         habitos.put("drogas", drogas);
 
         habitos.put("relatoAcusacionDetencion", dto.getRelatoAcusacionDetencion());
-        habitos.put("cambioCarreras", dto.getCambioCarreras());
-        habitos.put("motivosCambio", dto.getMotivosCambio());
-
         String habitosJson = objectMapper.writeValueAsString(habitos);
 
-        // Acuerdos completos (toda la info de la entrevista en JSON)
-        Map<String, Object> acuerdosCompletos = new HashMap<>();
-        
-        acuerdosCompletos.put("historiaClinica", dto.getHistoriaClinica());
-        acuerdosCompletos.put("motivoConsulta", dto.getMotivoConsulta());
-        acuerdosCompletos.put("conQuienVive", dto.getConQuienVive());
-        acuerdosCompletos.put("personaReferencia", dto.getPersonaReferencia());
-        acuerdosCompletos.put("celularReferencia", dto.getCelularReferencia());
-        acuerdosCompletos.put("nombrePadre", dto.getNombrePadre());
-        acuerdosCompletos.put("ocupacionPadre", dto.getOcupacionPadre());
-        acuerdosCompletos.put("enfermedadPadre", dto.getEnfermedadPadre());
-        acuerdosCompletos.put("relacionPadre", dto.getRelacionPadre());
-        acuerdosCompletos.put("nombreMadre", dto.getNombreMadre());
-        acuerdosCompletos.put("ocupacionMadre", dto.getOcupacionMadre());
-        acuerdosCompletos.put("enfermedadMadre", dto.getEnfermedadMadre());
-        acuerdosCompletos.put("relacionMadre", dto.getRelacionMadre());
-        acuerdosCompletos.put("numeroHermanos", dto.getNumeroHermanos());
-        acuerdosCompletos.put("relatoHermanos", dto.getRelatoHermanos());
-        acuerdosCompletos.put("sintomatologias", dto.getSintomas());
-        acuerdosCompletos.put("totalScoreEstres", dto.getTotalScoreEstres());
-        acuerdosCompletos.put("totalScoreAnsiedad", dto.getTotalScoreAnsiedad());
-        acuerdosCompletos.put("totalScoreDepresion", dto.getTotalScoreDepresion());
-        acuerdosCompletos.put("cambioCarreras", dto.getCambioCarreras());
-        acuerdosCompletos.put("motivosCambio", dto.getMotivosCambio());
-        acuerdosCompletos.put("relatoUniversidad", dto.getRelatoUniversidad());
-        acuerdosCompletos.put("consumoAlcohol", dto.getConsumoAlcohol());
-        acuerdosCompletos.put("frecuenciaAlcohol", dto.getFrecuenciaAlcohol());
-        acuerdosCompletos.put("consumoTabaco", dto.getConsumoTabaco());
-        acuerdosCompletos.put("frecuenciaTabaco", dto.getFrecuenciaTabaco());
-        acuerdosCompletos.put("consumoDrogas", dto.getConsumoDrogas());
-        acuerdosCompletos.put("frecuenciaDrogas", dto.getFrecuenciaDrogas());
-        acuerdosCompletos.put("relatoAcusacionDetencion", dto.getRelatoAcusacionDetencion());
-        acuerdosCompletos.put("gravedad", dto.getGravedad());
-        acuerdosCompletos.put("tipologias", dto.getTipologias());
-        // CAMPOS ELIMINADOS: notasSesion, objetivosSesion
-        acuerdosCompletos.put("acuerdosEstablecidos", dto.getAcuerdosEstablecidos());
-        acuerdosCompletos.put("proximaSesionFecha", dto.getProximaSesionFecha());
-        acuerdosCompletos.put("proximaSesionHora", dto.getProximaSesionHora());
+        // 6. Acuerdos (JSONB)
+        Map<String, Object> acuerdos = new HashMap<>();
+        acuerdos.put("acuerdosEstablecidos", dto.getAcuerdosEstablecidos());
+        acuerdos.put("proximaSesionFecha", dto.getProximaSesionFecha());
+        acuerdos.put("proximaSesionHora", dto.getProximaSesionHora());
+        String acuerdosJson = objectMapper.writeValueAsString(acuerdos);
 
-        String acuerdosJson = objectMapper.writeValueAsString(acuerdosCompletos);
-
-        System.out.println("=== PASO 4: Guardando entrevista");
+        // 7. Guardar entrevista psicologica
         EntrevistaPsicologica entrevista = new EntrevistaPsicologica();
         entrevista.setSesionPaciente(sesion);
         entrevista.setAntecedentes(dto.getMotivoConsulta());
-        entrevista.setDatosFamilia(familiaJson);
+        entrevista.setHistoriaFamiliar(historiaFamiliarJson);
+        entrevista.setRelatoUniversidad(relatoUniversidadJson);
         entrevista.setSintomas(sintomasJson);
         entrevista.setTotalScoreEstres(dto.getTotalScoreEstres());
         entrevista.setTotalScoreAnsiedad(dto.getTotalScoreAnsiedad());
         entrevista.setTotalScoreDepresion(dto.getTotalScoreDepresion());
-        entrevista.setRelatoUniversidad(dto.getRelatoUniversidad());
         entrevista.setHabitos(habitosJson);
         entrevista.setAcuerdos(acuerdosJson);
-
         entrevistaPsicologicaRepository.save(entrevista);
-        System.out.println("=== PASO 4 OK: Entrevista id=" + entrevista.getId());
+
+        // 8. Guardar historial clinico (primera sesion)
+        HistorialClinico historial = new HistorialClinico();
+        historial.setSesionPaciente(sesion);
+        historial.setNroSesion(1);
+        historial.setHistoria(dto.getHistoriaClinica());
+        historial.setGravedad(dto.getGravedad());
+        if (dto.getTipologias() != null) {
+            historial.setTipologia(objectMapper.writeValueAsString(dto.getTipologias()));
+        }
+        historialClinicoRepository.save(historial);
 
         return entrevista.getId();
     }

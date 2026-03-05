@@ -41,7 +41,6 @@ public class PacienteExternoService {
         paciente.setPerson(person);
         paciente.setFechaNacimiento(dto.getFechaNacimiento());
         paciente.setEdad(dto.getEdad());
-        paciente.setGenero(dto.getGenero());
         paciente.setDomicilio(dto.getDomicilio());
         paciente.setEstadoCivil(dto.getEstadoCivil());
         paciente.setTipoPaciente(2); // 2 = Paciente Externo

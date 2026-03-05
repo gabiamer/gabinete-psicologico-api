@@ -34,10 +34,7 @@ public class SesionPaciente {
     
     @Column(nullable = false)
     private LocalDateTime fecha;
-    
-    @Column(columnDefinition = "TEXT")
-    private String acuerdos;
-    
+
     @PrePersist
     protected void onCreate() {
         if (fecha == null) {

@@ -56,7 +56,6 @@ public class PacienteService {
         paciente.setPerson(person);
         paciente.setFechaNacimiento(dto.getFechaNacimiento());
         paciente.setEdad(dto.getEdad());
-        paciente.setGenero(dto.getGenero());
         paciente.setDomicilio(dto.getDomicilio());
         paciente.setEstadoCivil(dto.getEstadoCivil());
         paciente.setTipoPaciente(1);
@@ -112,7 +111,6 @@ public class PacienteService {
         Paciente paciente = pu.getPaciente();
         paciente.setFechaNacimiento(dto.getFechaNacimiento());
         paciente.setEdad(dto.getEdad());
-        paciente.setGenero(dto.getGenero());
         paciente.setDomicilio(dto.getDomicilio());
         paciente.setEstadoCivil(dto.getEstadoCivil());
         pacienteRepository.save(paciente);

@@ -12,7 +12,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/psicologos")
-@CrossOrigin(origins = "http://localhost:3000")
 public class PsicologoController {
 
     @Autowired

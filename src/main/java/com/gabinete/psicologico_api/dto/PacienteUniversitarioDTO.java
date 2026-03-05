@@ -8,7 +8,6 @@ public class PacienteUniversitarioDTO {
     private PersonDTO person;
     private LocalDate fechaNacimiento;
     private Integer edad;
-    private Integer genero;
     private String domicilio;
     private Integer estadoCivil;
     private Integer semestre;

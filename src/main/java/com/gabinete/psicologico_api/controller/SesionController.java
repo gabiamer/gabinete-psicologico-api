@@ -2,9 +2,11 @@ package com.gabinete.psicologico_api.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gabinete.psicologico_api.model.EntrevistaPsicologica;
+import com.gabinete.psicologico_api.model.HistorialClinico;
 import com.gabinete.psicologico_api.model.PacienteUniversitario;
 import com.gabinete.psicologico_api.model.SesionPaciente;
 import com.gabinete.psicologico_api.repository.EntrevistaPsicologicaRepository;
+import com.gabinete.psicologico_api.repository.HistorialClinicoRepository;
 import com.gabinete.psicologico_api.repository.PacienteUniversitarioRepository;
 import com.gabinete.psicologico_api.repository.SesionPacienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +23,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "http://localhost:3000")
 public class SesionController {
 
     @Autowired
@@ -32,6 +33,9 @@ public class SesionController {
 
     @Autowired
     private EntrevistaPsicologicaRepository entrevistaPsicologicaRepository;
+
+    @Autowired
+    private HistorialClinicoRepository historialClinicoRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -54,17 +58,13 @@ public class SesionController {
         }
     }
 
-    // Crear nueva sesión de seguimiento
+    // Crear nueva sesion de seguimiento
     @PostMapping("/pacientes/{id}/sesiones")
     public ResponseEntity<?> crearSesion(
             @PathVariable Long id,
             @RequestBody Map<String, Object> sesionData) {
 
         try {
-            System.out.println("=== CREANDO NUEVA SESIÓN ===");
-            System.out.println("Paciente ID: " + id);
-            System.out.println("Datos recibidos: " + sesionData);
-
             PacienteUniversitario paciente = pacienteUniversitarioRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Paciente no encontrado: " + id));
 
@@ -85,59 +85,71 @@ public class SesionController {
                 sesion.setFecha(LocalDateTime.now());
             }
 
-            // Guardar acuerdos como JSON
-            Object acuerdosObj = sesionData.get("acuerdos");
-            if (acuerdosObj != null) {
-                String acuerdosJson = objectMapper.writeValueAsString(acuerdosObj);
-                sesion.setAcuerdos(acuerdosJson);
-                System.out.println("Acuerdos JSON: " + acuerdosJson);
-            }
-
             sesion = sesionPacienteRepository.save(sesion);
-            System.out.println("=== SESIÓN GUARDADA CON ID: " + sesion.getId() + " ===");
+
+            // Crear historial clinico para esta sesion
+            @SuppressWarnings("unchecked")
+            Map<String, Object> historialData = (Map<String, Object>) sesionData.get("historialClinico");
+            if (historialData != null) {
+                HistorialClinico historial = new HistorialClinico();
+                historial.setSesionPaciente(sesion);
+
+                Object nroSesionObj = historialData.get("nroSesion");
+                if (nroSesionObj instanceof Number) {
+                    historial.setNroSesion(((Number) nroSesionObj).intValue());
+                }
+
+                historial.setHistoria((String) historialData.get("historia"));
+                historial.setGravedad((String) historialData.get("gravedad"));
+
+                Object tipologiasObj = historialData.get("tipologias");
+                if (tipologiasObj != null) {
+                    historial.setTipologia(objectMapper.writeValueAsString(tipologiasObj));
+                }
+
+                historialClinicoRepository.save(historial);
+            }
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("message", "Sesión creada exitosamente");
+            response.put("message", "Sesion creada exitosamente");
             response.put("data", sesion);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
-            System.err.println("ERROR al crear sesión: " + e.getMessage());
-            e.printStackTrace();
-
             Map<String, Object> error = new HashMap<>();
             error.put("success", false);
-            error.put("message", "Error al crear sesión: " + e.getMessage());
+            error.put("message", "Error al crear sesion: " + e.getMessage());
             return ResponseEntity.badRequest().body(error);
         }
     }
 
-    // Obtener sesión por ID
-    // Si sesion.acuerdos tiene datos → sesión de seguimiento (NuevaSesion)
-    // Si es null → buscar en entrevista_psicologica (entrevista inicial)
+    // Obtener sesion por ID
     @GetMapping("/sesiones/{id}")
     public ResponseEntity<?> obtenerSesion(@PathVariable Long id) {
         try {
             SesionPaciente sesion = sesionPacienteRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Sesión no encontrada"));
-
-            String acuerdosFinales = sesion.getAcuerdos();
-
-            if (acuerdosFinales == null) {
-                Optional<EntrevistaPsicologica> entrevista =
-                        entrevistaPsicologicaRepository.findBySesionPacienteId(id);
-                if (entrevista.isPresent() && entrevista.get().getAcuerdos() != null) {
-                    acuerdosFinales = entrevista.get().getAcuerdos();
-                }
-            }
+                    .orElseThrow(() -> new RuntimeException("Sesion no encontrada"));
 
             Map<String, Object> sesionMap = new HashMap<>();
             sesionMap.put("id", sesion.getId());
             sesionMap.put("fecha", sesion.getFecha());
-            sesionMap.put("acuerdos", acuerdosFinales);
             sesionMap.put("psicologo", sesion.getPsicologo());
             sesionMap.put("pacienteUniversitario", sesion.getPacienteUniversitario());
+
+            // Buscar entrevista psicologica (primera sesion)
+            Optional<EntrevistaPsicologica> entrevista =
+                    entrevistaPsicologicaRepository.findBySesionPacienteId(id);
+            if (entrevista.isPresent()) {
+                sesionMap.put("entrevista", entrevista.get());
+            }
+
+            // Buscar historial clinico
+            Optional<HistorialClinico> historial =
+                    historialClinicoRepository.findBySesionPacienteId(id);
+            if (historial.isPresent()) {
+                sesionMap.put("historialClinico", historial.get());
+            }
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -147,7 +159,7 @@ public class SesionController {
         } catch (Exception e) {
             Map<String, Object> error = new HashMap<>();
             error.put("success", false);
-            error.put("message", "Sesión no encontrada: " + e.getMessage());
+            error.put("message", "Sesion no encontrada: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
         }
     }
