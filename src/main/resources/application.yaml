@@ -13,7 +13,7 @@ spring:
             model: gemini-2.5-flash
   
   datasource:
-    url: jdbc:postgresql://localhost:5437/gabinete_psicologico
+    url: jdbc:postgresql://localhost:5432/gabinete_psicologico
     username: postgres
     password: 1234567
     driver-class-name: org.postgresql.Driver
@@ -22,10 +22,10 @@ spring:
     enabled: true
     baseline-on-migrate: true
     baseline-version: 0
-
+    locations: classpath:db/migration
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     show-sql: false
     properties:
       hibernate:

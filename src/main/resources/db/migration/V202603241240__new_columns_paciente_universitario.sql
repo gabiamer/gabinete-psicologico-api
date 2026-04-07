@@ -1,3 +1,3 @@
 ALTER TABLE paciente_universitario
-ADD COLUMN descripcion TEXT,
-ADD COLUMN principal_problematica TEXT;
+ADD COLUMN IF NOT EXISTS descripcion TEXT,
+ADD COLUMN IF NOT EXISTS principal_problematica TEXT;

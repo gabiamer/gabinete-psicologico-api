@@ -1,2 +1,2 @@
 ALTER TABLE paciente
-  ADD COLUMN genero INT;
+  ADD COLUMN IF NOT EXISTS genero INT;

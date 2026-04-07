@@ -1,3 +1,3 @@
 ALTER TABLE sesion_paciente
-    ADD COLUMN hora_inicio TIME NULL,
-    ADD COLUMN hora_fin    TIME NULL;
+    ADD COLUMN IF NOT EXISTS hora_inicio TIME NULL,
+    ADD COLUMN IF NOT EXISTS hora_fin    TIME NULL;

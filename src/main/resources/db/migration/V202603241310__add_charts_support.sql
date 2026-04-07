@@ -1,10 +1,10 @@
 -- Columna en sesion_paciente para soporte de graficas de horas
 ALTER TABLE sesion_paciente
-  ADD COLUMN duracion_minutos INT;
+  ADD COLUMN IF NOT EXISTS duracion_minutos INT;
 
 -- Tabla para registrar horas designadas AP por mes/turno (registro administrativo)
 -- turno: 'manana' | 'tarde'
-CREATE TABLE horas_designadas_ap (
+CREATE TABLE IF NOT EXISTS horas_designadas_ap (
   id            BIGSERIAL PRIMARY KEY,
   psicologo_id  BIGINT       NOT NULL REFERENCES psicologo(id),
   anio          INT          NOT NULL,
