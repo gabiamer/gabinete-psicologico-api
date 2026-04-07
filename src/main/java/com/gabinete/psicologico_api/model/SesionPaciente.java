@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.EqualsAndHashCode;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "sesion_paciente")
@@ -34,6 +35,15 @@ public class SesionPaciente {
     
     @Column(nullable = false)
     private LocalDateTime fecha;
+
+    @Column(name = "hora_inicio")
+    private LocalTime horaInicio;
+
+    @Column(name = "hora_fin")
+    private LocalTime horaFin;
+
+    @Column(name = "duracion_minutos")
+    private Integer duracionMinutos;
 
     @PrePersist
     protected void onCreate() {

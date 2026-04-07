@@ -1,10 +1,12 @@
 //src/main/java/com/gabinete/psicologico_api/controller/PacienteController.java
 package com.gabinete.psicologico_api.controller;
 
+import com.gabinete.psicologico_api.dto.EntrevistaCompletaDTO;
 import com.gabinete.psicologico_api.dto.PacienteUniversitarioDTO;
 import com.gabinete.psicologico_api.model.PacienteUniversitario;
 import com.gabinete.psicologico_api.repository.PacienteUniversitarioRepository;
 import com.gabinete.psicologico_api.service.PacienteService;
+import com.gabinete.psicologico_api.service.ResumenIAService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +29,9 @@ public class PacienteController {
     
     @Autowired
     private EntrevistaService entrevistaService;
+
+    @Autowired
+    private ResumenIAService resumenIAService;
 
     @Autowired
     private PacienteUniversitarioRepository pacienteUniversitarioRepository;
@@ -165,30 +170,23 @@ public class PacienteController {
         }
     }
     
-    // DELETE - Eliminar paciente
+    // DELETE - Eliminar paciente universitario y todos sus datos relacionados
     @DeleteMapping("/universitario/{id}")
     public ResponseEntity<Map<String, Object>> eliminarPaciente(@PathVariable Long id) {
         try {
-            if (!pacienteUniversitarioRepository.existsById(id)) {
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", false);
-                response.put("message", "Paciente no encontrado");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-            }
-            
-            pacienteUniversitarioRepository.deleteById(id);
-            
+            pacienteService.eliminarPacienteCompleto(id);
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Paciente eliminado exitosamente");
-            
+
             return ResponseEntity.ok(response);
-            
+
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "Error al eliminar paciente: " + e.getMessage());
-            
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -218,6 +216,95 @@ public class PacienteController {
         }
     }
     
+    // ACTUALIZAR SITUACION DEL CASO
+    @PatchMapping("/universitario/{id}/situacion")
+    public ResponseEntity<Map<String, Object>> actualizarSituacion(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+        try {
+            PacienteUniversitario pu = pacienteUniversitarioRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
+            pu.setSituacionCaso(body.get("situacionCaso"));
+            pacienteUniversitarioRepository.save(pu);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("situacionCaso", pu.getSituacionCaso());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Error al actualizar situacion: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    // ACTUALIZAR DESCRIPCION Y PROBLEMATICA MANUALMENTE
+    @PatchMapping("/universitario/{id}/textos")
+    public ResponseEntity<Map<String, Object>> actualizarTextos(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+        try {
+            PacienteUniversitario pu = pacienteUniversitarioRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
+            if (body.containsKey("descripcion"))           pu.setDescripcion(body.get("descripcion"));
+            if (body.containsKey("principalProblematica")) pu.setPrincipalProblematica(body.get("principalProblematica"));
+            pacienteUniversitarioRepository.save(pu);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("descripcion", pu.getDescripcion());
+            response.put("principalProblematica", pu.getPrincipalProblematica());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Error al actualizar textos: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    // GENERAR RESUMEN CON IA
+    @PostMapping("/universitario/{id}/generar-resumen")
+    public ResponseEntity<Map<String, Object>> generarResumenIA(@PathVariable Long id) {
+        try {
+            Map<String, String> resumen = resumenIAService.generarResumen(id);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("descripcion", resumen.get("descripcion"));
+            response.put("principalProblematica", resumen.get("principalProblematica"));
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Error al generar resumen: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    // ── ENDPOINT UNIFICADO: crea paciente + entrevista en una sola llamada ──
+    @PostMapping("/entrevista-completa")
+    public ResponseEntity<Map<String, Object>> crearEntrevistaCompleta(
+            @RequestBody EntrevistaCompletaDTO dto) {
+        try {
+            PacienteUniversitario pu = pacienteService.crearEntrevistaCompleta(dto);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Entrevista registrada exitosamente");
+            response.put("pacienteId", pu.getId());
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Error al registrar entrevista: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
     @GetMapping("/test")
     public ResponseEntity<Map<String, String>> test() {
         Map<String, String> response = new HashMap<>();

@@ -42,20 +42,62 @@ public class CarreraController {
         try {
             Carrera carrera = new Carrera();
             carrera.setCarrera((String) carreraData.get("carrera"));
-            carrera.setDepartamento((Integer) carreraData.get("departamento"));
-            
+            carrera.setDepartamento((String) carreraData.get("departamento"));
+
             Carrera guardada = carreraRepository.save(carrera);
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Carrera creada exitosamente");
             response.put("data", guardada);
-            
+
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
             Map<String, Object> error = new HashMap<>();
             error.put("success", false);
             error.put("message", "Error al crear carrera: " + e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> actualizarCarrera(@PathVariable Long id, @RequestBody Map<String, Object> carreraData) {
+        try {
+            Carrera carrera = carreraRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Carrera no encontrada"));
+
+            if (carreraData.containsKey("carrera"))      carrera.setCarrera((String) carreraData.get("carrera"));
+            if (carreraData.containsKey("departamento")) carrera.setDepartamento((String) carreraData.get("departamento"));
+
+            Carrera actualizada = carreraRepository.save(carrera);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", actualizada);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", "Error al actualizar carrera: " + e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> eliminarCarrera(@PathVariable Long id) {
+        try {
+            Carrera carrera = carreraRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Carrera no encontrada"));
+            carreraRepository.delete(carrera);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Carrera eliminada correctamente");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", "Error al eliminar carrera: " + e.getMessage());
             return ResponseEntity.badRequest().body(error);
         }
     }

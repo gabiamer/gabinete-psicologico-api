@@ -15,7 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +85,23 @@ public class SesionController {
                 }
             } else {
                 sesion.setFecha(LocalDateTime.now());
+            }
+
+            // Parsear hora_inicio y hora_fin
+            String horaInicioStr = (String) sesionData.get("horaInicio");
+            String horaFinStr    = (String) sesionData.get("horaFin");
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+
+            if (horaInicioStr != null) {
+                sesion.setHoraInicio(LocalTime.parse(horaInicioStr, timeFormatter));
+            }
+            if (horaFinStr != null) {
+                sesion.setHoraFin(LocalTime.parse(horaFinStr, timeFormatter));
+            }
+            // Calcular duracion_minutos si ambas horas están presentes
+            if (sesion.getHoraInicio() != null && sesion.getHoraFin() != null) {
+                long minutos = ChronoUnit.MINUTES.between(sesion.getHoraInicio(), sesion.getHoraFin());
+                sesion.setDuracionMinutos((int) Math.max(minutos, 0));
             }
 
             sesion = sesionPacienteRepository.save(sesion);

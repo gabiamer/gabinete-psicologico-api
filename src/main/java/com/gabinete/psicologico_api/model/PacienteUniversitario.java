@@ -34,4 +34,13 @@ public class PacienteUniversitario {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Psicologo psicologo;
+
+    @Column(columnDefinition = "TEXT")
+    private String descripcion;
+
+    @Column(name = "principal_problematica", columnDefinition = "TEXT")
+    private String principalProblematica;
+
+    @Column(name = "situacion_caso", length = 100)
+    private String situacionCaso;
 }

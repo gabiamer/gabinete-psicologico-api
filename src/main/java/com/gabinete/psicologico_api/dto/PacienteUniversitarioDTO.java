@@ -10,6 +10,7 @@ public class PacienteUniversitarioDTO {
     private Integer edad;
     private String domicilio;
     private Integer estadoCivil;
+    private Integer genero;
     private Integer semestre;
     private String derivadoPor;
     private Long carreraId;

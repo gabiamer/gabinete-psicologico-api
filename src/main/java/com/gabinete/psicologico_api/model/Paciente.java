@@ -35,4 +35,7 @@ public class Paciente {
     
     @Column(name = "tipo_paciente")
     private Integer tipoPaciente;
+
+    @Column(name = "genero")
+    private Integer genero;
 }
