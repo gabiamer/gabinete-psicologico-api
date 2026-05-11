@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface SesionPacienteRepository extends JpaRepository<SesionPaciente, Long> {
@@ -13,4 +14,10 @@ public interface SesionPacienteRepository extends JpaRepository<SesionPaciente, 
     List<SesionPaciente> findByPacienteUniversitarioId(Long pacienteUniversitarioId);
 
     List<SesionPaciente> findByFechaBetween(LocalDateTime inicio, LocalDateTime fin);
+
+    List<SesionPaciente> findByFechaBetweenAndPsicologoId(LocalDateTime inicio, LocalDateTime fin, Long psicologoId);
+
+    Optional<SesionPaciente> findTopByPacienteUniversitarioIdOrderByFechaDesc(Long pacienteUniversitarioId);
+
+    List<SesionPaciente> findByPacienteUniversitarioPsicologoId(Long psicologoId);
 }

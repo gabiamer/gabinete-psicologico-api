@@ -8,6 +8,7 @@ import com.gabinete.psicologico_api.dto.PacienteUniversitarioDTO;
 import com.gabinete.psicologico_api.model.*;
 import com.gabinete.psicologico_api.model.SesionPaciente;
 import com.gabinete.psicologico_api.repository.*;
+import com.gabinete.psicologico_api.security.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,12 +84,12 @@ public class PacienteService {
         pu.setSemestre(dto.getSemestre());
         pu.setDerivadoPor(dto.getDerivadoPor());
 
-        // 4. Asignar psicólogo
-        if (dto.getPsicologoId() != null) {
-            psicologoRepository.findById(dto.getPsicologoId())
-                    .ifPresent(pu::setPsicologo);
+        // 4. Asignar psicólogo (del DTO o del JWT)
+        Long psicologoId = dto.getPsicologoId() != null ? dto.getPsicologoId() : SecurityUtils.getCurrentPsicologoId();
+        if (psicologoId != null) {
+            psicologoRepository.findById(psicologoId).ifPresent(pu::setPsicologo);
         }
-        
+
         // Guardar primero el PacienteUniversitario
         pu = pacienteUniversitarioRepository.save(pu);
         
@@ -239,8 +240,9 @@ public class PacienteService {
         pu.setPaciente(paciente);
         pu.setSemestre(dto.getSemestre());
         pu.setDerivadoPor(dto.getDerivadoPor());
-        if (dto.getPsicologoId() != null) {
-            psicologoRepository.findById(dto.getPsicologoId()).ifPresent(pu::setPsicologo);
+        Long psicIdEntrevista = dto.getPsicologoId() != null ? dto.getPsicologoId() : SecurityUtils.getCurrentPsicologoId();
+        if (psicIdEntrevista != null) {
+            psicologoRepository.findById(psicIdEntrevista).ifPresent(pu::setPsicologo);
         }
         pu = pacienteUniversitarioRepository.save(pu);
 

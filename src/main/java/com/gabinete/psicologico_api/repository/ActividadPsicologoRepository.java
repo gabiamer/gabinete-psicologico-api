@@ -13,4 +13,7 @@ public interface ActividadPsicologoRepository extends JpaRepository<ActividadPsi
     List<ActividadPsicologo> findByFechaInicioBetween(LocalDateTime desde, LocalDateTime hasta);
     List<ActividadPsicologo> findByFechaInicioGreaterThanEqualAndFechaFinLessThanEqual(LocalDateTime desde, LocalDateTime hasta);
     List<ActividadPsicologo> findAllByOrderByFechaInicioDesc();
+    List<ActividadPsicologo> findByPsicologoIdOrderByFechaInicioDesc(Long psicologoId);
+    List<ActividadPsicologo> findByPsicologoIdAndFechaInicioGreaterThanEqualAndFechaFinLessThanEqual(
+            Long psicologoId, LocalDateTime desde, LocalDateTime hasta);
 }

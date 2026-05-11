@@ -6,6 +6,7 @@ import com.gabinete.psicologico_api.model.Psicologo;
 import com.gabinete.psicologico_api.repository.ActividadEvidenciaRepository;
 import com.gabinete.psicologico_api.repository.ActividadPsicologoRepository;
 import com.gabinete.psicologico_api.repository.PsicologoRepository;
+import com.gabinete.psicologico_api.security.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,7 +32,10 @@ public class ActividadPsicologoController {
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> obtenerTodas() {
-        List<ActividadPsicologo> actividades = actividadRepository.findAllByOrderByFechaInicioDesc();
+        Long psicologoId = SecurityUtils.getCurrentPsicologoId();
+        List<ActividadPsicologo> actividades = psicologoId == null
+                ? actividadRepository.findAllByOrderByFechaInicioDesc()
+                : actividadRepository.findByPsicologoId(psicologoId);
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
         response.put("data", actividades);
@@ -60,8 +64,10 @@ public class ActividadPsicologoController {
             @RequestParam String hasta) {
         LocalDateTime fechaDesde = LocalDateTime.parse(desde + "T00:00:00");
         LocalDateTime fechaHasta = LocalDateTime.parse(hasta + "T23:59:59");
-        List<ActividadPsicologo> actividades = actividadRepository
-                .findByFechaInicioGreaterThanEqualAndFechaFinLessThanEqual(fechaDesde, fechaHasta);
+        Long psicologoId = SecurityUtils.getCurrentPsicologoId();
+        List<ActividadPsicologo> actividades = psicologoId == null
+                ? actividadRepository.findByFechaInicioGreaterThanEqualAndFechaFinLessThanEqual(fechaDesde, fechaHasta)
+                : actividadRepository.findByPsicologoIdAndFechaInicioGreaterThanEqualAndFechaFinLessThanEqual(psicologoId, fechaDesde, fechaHasta);
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
         response.put("data", actividades);

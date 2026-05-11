@@ -21,4 +21,20 @@ public interface PacienteExternoRepository extends JpaRepository<PacienteExterno
            "OR per.celular LIKE CONCAT('%', :termino, '%') " +
            "OR pe.correo LIKE CONCAT('%', :termino, '%')")
     List<PacienteExterno> buscarPorTermino(@Param("termino") String termino);
+
+    List<PacienteExterno> findByPsicologoId(Long psicologoId);
+
+    @Query("SELECT pe FROM PacienteExterno pe " +
+           "JOIN pe.paciente p " +
+           "JOIN p.person per " +
+           "WHERE pe.psicologo.id = :psicologoId " +
+           "AND (LOWER(per.primerNombre) LIKE LOWER(CONCAT('%', :termino, '%')) " +
+           "OR LOWER(per.segundoNombre) LIKE LOWER(CONCAT('%', :termino, '%')) " +
+           "OR LOWER(per.apellidoPaterno) LIKE LOWER(CONCAT('%', :termino, '%')) " +
+           "OR LOWER(per.apellidoMaterno) LIKE LOWER(CONCAT('%', :termino, '%')) " +
+           "OR per.celular LIKE CONCAT('%', :termino, '%') " +
+           "OR pe.correo LIKE CONCAT('%', :termino, '%'))")
+    List<PacienteExterno> buscarPorTerminoYPsicologo(
+            @Param("termino") String termino,
+            @Param("psicologoId") Long psicologoId);
 }

@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface HorasDesignadasApRepository extends JpaRepository<HorasDesignadasAp, Long> {
     List<HorasDesignadasAp> findByAnio(Integer anio);
     Optional<HorasDesignadasAp> findByPsicologo_IdAndAnioAndMesAndTurno(Long psicologoId, Integer anio, Integer mes, String turno);
+    List<HorasDesignadasAp> findByAnioAndPsicologoId(Integer anio, Long psicologoId);
 }

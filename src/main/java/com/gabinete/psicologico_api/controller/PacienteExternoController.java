@@ -3,6 +3,8 @@ package com.gabinete.psicologico_api.controller;
 import com.gabinete.psicologico_api.dto.OrientacionCompletaDTO;
 import com.gabinete.psicologico_api.dto.PacienteExternoDTO;
 import com.gabinete.psicologico_api.model.PacienteExterno;
+import com.gabinete.psicologico_api.repository.PacienteExternoRepository;
+import com.gabinete.psicologico_api.security.SecurityUtils;
 import com.gabinete.psicologico_api.service.PacienteExternoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,6 +21,9 @@ public class PacienteExternoController {
 
     @Autowired
     private PacienteExternoService pacienteExternoService;
+
+    @Autowired
+    private PacienteExternoRepository pacienteExternoRepository;
 
     @PostMapping
     public ResponseEntity<?> crearPacienteExterno(@RequestBody PacienteExternoDTO dto) {
@@ -98,7 +103,10 @@ public class PacienteExternoController {
     @GetMapping("/buscar")
     public ResponseEntity<?> buscarPacientes(@RequestParam String q) {
         try {
-            List<PacienteExterno> pacientes = pacienteExternoService.buscarPacientes(q);
+            Long psicologoId = SecurityUtils.getCurrentPsicologoId();
+            List<PacienteExterno> pacientes = psicologoId == null
+                    ? pacienteExternoService.buscarPacientes(q)
+                    : pacienteExternoRepository.buscarPorTerminoYPsicologo(q, psicologoId);
             
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);

@@ -4,7 +4,11 @@ package com.gabinete.psicologico_api.controller;
 import com.gabinete.psicologico_api.dto.EntrevistaCompletaDTO;
 import com.gabinete.psicologico_api.dto.PacienteUniversitarioDTO;
 import com.gabinete.psicologico_api.model.PacienteUniversitario;
+import com.gabinete.psicologico_api.model.Psicologo;
 import com.gabinete.psicologico_api.repository.PacienteUniversitarioRepository;
+import com.gabinete.psicologico_api.repository.PsicologoRepository;
+import com.gabinete.psicologico_api.repository.SesionPacienteRepository;
+import com.gabinete.psicologico_api.security.SecurityUtils;
 import com.gabinete.psicologico_api.service.PacienteService;
 import com.gabinete.psicologico_api.service.ResumenIAService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,31 +39,38 @@ public class PacienteController {
 
     @Autowired
     private PacienteUniversitarioRepository pacienteUniversitarioRepository;
-    
+
+    @Autowired
+    private PsicologoRepository psicologoRepository;
+
+    @Autowired
+    private SesionPacienteRepository sesionPacienteRepository;
+
     // Endpoint de búsqueda combinada (por término y/o fecha)
     @GetMapping("/buscar")
     public ResponseEntity<?> buscarPacientes(
             @RequestParam(required = false) String q,
             @RequestParam(required = false) String fecha) {
         try {
+            Long psicologoId = SecurityUtils.getCurrentPsicologoId();
             List<PacienteUniversitario> pacientes;
-            
-            // Si hay fecha, buscar por fecha (con o sin término)
+
             if (fecha != null && !fecha.trim().isEmpty()) {
                 LocalDate fechaBusqueda = LocalDate.parse(fecha);
-                
                 if (q != null && !q.trim().isEmpty()) {
-                    // Buscar por término Y fecha
-                    pacientes = pacienteService.buscarPorTerminoYFecha(q, fechaBusqueda);
+                    pacientes = psicologoId == null
+                            ? pacienteService.buscarPorTerminoYFecha(q, fechaBusqueda)
+                            : pacienteUniversitarioRepository.buscarPorTerminoYFechaYPsicologo(q, fechaBusqueda, psicologoId);
                 } else {
-                    // Buscar solo por fecha
-                    pacientes = pacienteService.buscarPorFecha(fechaBusqueda);
+                    pacientes = psicologoId == null
+                            ? pacienteService.buscarPorFecha(fechaBusqueda)
+                            : pacienteUniversitarioRepository.buscarPorFechaSesionYPsicologo(fechaBusqueda, psicologoId);
                 }
             } else if (q != null && !q.trim().isEmpty()) {
-                // Buscar solo por término (comportamiento actual)
-                pacientes = pacienteService.buscarPacientes(q);
+                pacientes = psicologoId == null
+                        ? pacienteService.buscarPacientes(q)
+                        : pacienteUniversitarioRepository.buscarPorTerminoYPsicologo(q, psicologoId);
             } else {
-                // Sin parámetros, devolver lista vacía
                 pacientes = List.of();
             }
             
@@ -123,7 +134,10 @@ public class PacienteController {
     @GetMapping("/universitario")
     public ResponseEntity<Map<String, Object>> obtenerTodosPacientes() {
         try {
-            List<PacienteUniversitario> pacientes = pacienteUniversitarioRepository.findAll();
+            Long psicologoId = SecurityUtils.getCurrentPsicologoId();
+            List<PacienteUniversitario> pacientes = psicologoId != null
+                    ? pacienteUniversitarioRepository.findByPsicologoId(psicologoId)
+                    : pacienteUniversitarioRepository.findAll();
             
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -329,6 +343,86 @@ public class PacienteController {
         Map<String, String> response = new HashMap<>();
         response.put("message", "Endpoint de pacientes funcionando");
         return ResponseEntity.ok(response);
+    }
+
+    // TRANSFERIR PACIENTE a otro psicologo
+    @PostMapping("/universitario/{id}/transferir")
+    public ResponseEntity<Map<String, Object>> transferirPaciente(
+            @PathVariable Long id,
+            @RequestBody Map<String, Long> body) {
+        try {
+            Long nuevoPsicologoId = body.get("nuevoPsicologoId");
+            if (nuevoPsicologoId == null) {
+                Map<String, Object> err = new HashMap<>();
+                err.put("success", false);
+                err.put("message", "nuevoPsicologoId es requerido");
+                return ResponseEntity.badRequest().body(err);
+            }
+
+            PacienteUniversitario pu = pacienteUniversitarioRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
+
+            // Verificar ownership (solo el psicologo asignado o admin puede transferir)
+            Long currentPsicologoId = SecurityUtils.getCurrentPsicologoId();
+            if (currentPsicologoId != null) {
+                Long asignado = pu.getPsicologo() != null ? pu.getPsicologo().getId() : null;
+                if (!currentPsicologoId.equals(asignado)) {
+                    Map<String, Object> err = new HashMap<>();
+                    err.put("success", false);
+                    err.put("message", "No autorizado para transferir este paciente");
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(err);
+                }
+            }
+
+            Psicologo nuevoPsicologo = psicologoRepository.findById(nuevoPsicologoId)
+                    .orElseThrow(() -> new RuntimeException("Psicologo destino no encontrado"));
+
+            pu.setPsicologo(nuevoPsicologo);
+            pacienteUniversitarioRepository.save(pu);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Paciente transferido exitosamente");
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Error al transferir paciente: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    // PSICOLOGO DE LA ULTIMA SESION
+    @GetMapping("/universitario/{id}/psicologo-ultima-sesion")
+    public ResponseEntity<Map<String, Object>> psicologoUltimaSesion(@PathVariable Long id) {
+        try {
+            Map<String, Object> response = new HashMap<>();
+            sesionPacienteRepository.findTopByPacienteUniversitarioIdOrderByFechaDesc(id)
+                    .ifPresentOrElse(sesion -> {
+                        if (sesion.getPsicologo() != null) {
+                            response.put("success", true);
+                            response.put("psicologoId", sesion.getPsicologo().getId());
+                            response.put("nombre", sesion.getPsicologo().getPerson().getPrimerNombre()
+                                    + " " + sesion.getPsicologo().getPerson().getApellidoPaterno());
+                            response.put("ocupacion", sesion.getPsicologo().getOcupacion());
+                        } else {
+                            response.put("success", true);
+                            response.put("psicologoId", null);
+                            response.put("nombre", "Sin asignar");
+                        }
+                    }, () -> {
+                        response.put("success", true);
+                        response.put("psicologoId", null);
+                        response.put("nombre", "Sin sesiones");
+                    });
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> err = new HashMap<>();
+            err.put("success", false);
+            err.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(err);
+        }
     }
 
     // GUARDAR ANTECEDENTES

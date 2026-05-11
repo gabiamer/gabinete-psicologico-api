@@ -8,7 +8,9 @@ import com.gabinete.psicologico_api.model.SesionPaciente;
 import com.gabinete.psicologico_api.repository.EntrevistaPsicologicaRepository;
 import com.gabinete.psicologico_api.repository.HistorialClinicoRepository;
 import com.gabinete.psicologico_api.repository.PacienteUniversitarioRepository;
+import com.gabinete.psicologico_api.repository.PsicologoRepository;
 import com.gabinete.psicologico_api.repository.SesionPacienteRepository;
+import com.gabinete.psicologico_api.security.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +40,9 @@ public class SesionController {
 
     @Autowired
     private HistorialClinicoRepository historialClinicoRepository;
+
+    @Autowired
+    private PsicologoRepository psicologoRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -72,7 +77,13 @@ public class SesionController {
 
             SesionPaciente sesion = new SesionPaciente();
             sesion.setPacienteUniversitario(paciente);
-            sesion.setPsicologo(paciente.getPsicologo());
+            // Asignar el psicologo del JWT (quien conduce la sesion actual)
+            Long psicologoId = SecurityUtils.getCurrentPsicologoId();
+            if (psicologoId != null) {
+                psicologoRepository.findById(psicologoId).ifPresent(sesion::setPsicologo);
+            } else {
+                sesion.setPsicologo(paciente.getPsicologo());
+            }
 
             // Parsear fecha
             String fechaStr = (String) sesionData.get("fecha");

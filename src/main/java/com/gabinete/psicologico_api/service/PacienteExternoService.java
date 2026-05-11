@@ -6,6 +6,7 @@ import com.gabinete.psicologico_api.dto.OrientacionCompletaDTO;
 import com.gabinete.psicologico_api.dto.PacienteExternoDTO;
 import com.gabinete.psicologico_api.model.*;
 import com.gabinete.psicologico_api.repository.*;
+import com.gabinete.psicologico_api.security.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,9 @@ public class PacienteExternoService {
 
     @Autowired
     private OrientacionVocacionalRepository orientacionVocacionalRepository;
+
+    @Autowired
+    private PsicologoRepository psicologoRepository;
     
     @Transactional
     public PacienteExterno crearPacienteExterno(PacienteExternoDTO dto) {
@@ -60,9 +64,14 @@ public class PacienteExternoService {
         pe.setEscuela(dto.getEscuela());
         pe.setAnio(dto.getAnio());
         pe.setCorreo(dto.getCorreo());
+        // Auto-asignar psicologo del JWT
+        Long psicologoId = SecurityUtils.getCurrentPsicologoId();
+        if (psicologoId != null) {
+            psicologoRepository.findById(psicologoId).ifPresent(pe::setPsicologo);
+        }
         pe = pacienteExternoRepository.save(pe);
         System.out.println("PacienteExterno guardado con ID: " + pe.getId());
-        
+
         return pe;
     }
 
@@ -126,6 +135,11 @@ public class PacienteExternoService {
         pe.setEscuela(dto.getEscuela());
         pe.setAnio(dto.getAnio());
         pe.setCorreo(dto.getCorreo());
+        // Auto-asignar psicologo del JWT
+        Long psicIdOC = SecurityUtils.getCurrentPsicologoId();
+        if (psicIdOC != null) {
+            psicologoRepository.findById(psicIdOC).ifPresent(pe::setPsicologo);
+        }
         pe = pacienteExternoRepository.save(pe);
 
         // ── 4. OrientacionVocacional ───────────────────────────────────────────

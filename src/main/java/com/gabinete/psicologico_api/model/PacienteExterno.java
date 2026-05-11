@@ -27,4 +27,8 @@ public class PacienteExterno {
     
     @Column(length = 50)
     private String correo;
+
+    @ManyToOne
+    @JoinColumn(name = "psicologo_id")
+    private Psicologo psicologo;
 }

@@ -41,10 +41,10 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
   
-  security:
-    user:
-      name: admin
-      password: admin123
+jwt:
+  secret: Y2xhdmUtc2VjcmV0YS1nYWJpbmV0ZS1wc2ljb2xvZ2ljby0yMDI2LXNlZ3VyYQ==
+  expiration: 86400000
+
 logging:
   level:
     org.flywaydb: DEBUG
