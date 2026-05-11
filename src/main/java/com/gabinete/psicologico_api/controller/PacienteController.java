@@ -284,6 +284,25 @@ public class PacienteController {
         }
     }
 
+    // EXTRAER PROBLEMÁTICAS FRECUENTES CON IA
+    @PostMapping("/problematicas-frecuentes")
+    public ResponseEntity<Map<String, Object>> extraerProblematicasFrecuentes(@RequestBody List<String> problematicas) {
+        try {
+            List<String> resultado = resumenIAService.extraerProblematicasFrecuentes(problematicas);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", resultado);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Error al extraer problemáticas: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
     // ── ENDPOINT UNIFICADO: crea paciente + entrevista en una sola llamada ──
     @PostMapping("/entrevista-completa")
     public ResponseEntity<Map<String, Object>> crearEntrevistaCompleta(

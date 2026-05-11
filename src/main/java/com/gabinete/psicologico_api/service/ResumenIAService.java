@@ -31,6 +31,54 @@ public class ResumenIAService {
     @Autowired
     private EntrevistaPsicologicaRepository entrevistaRepository;
 
+    public List<String> extraerProblematicasFrecuentes(List<String> problematicas) {
+        if (problematicas == null || problematicas.isEmpty()) {
+            return List.of();
+        }
+
+        String listaTexto = String.join("\n", problematicas);
+
+        String prompt = """
+                Eres un psicólogo clínico experto. A continuación se presenta una lista de problemáticas principales identificadas en pacientes universitarios durante un periodo:
+
+                %s
+
+                Analiza estas problemáticas y genera una lista concisa de las PROBLEMÁTICAS MÁS FRECUENTES, agrupando las que sean similares bajo una misma categoría.
+                Ordénalas de más frecuente a menos frecuente.
+                Cada categoría debe ser un título corto en mayúsculas (ej: "ANSIEDAD", "ESTRÉS ACADÉMICO", "DEPRESIÓN").
+                Omite las que digan que no se pudo determinar la problemática.
+
+                Responde ÚNICAMENTE con un JSON válido, sin markdown, sin texto adicional:
+                {"problematicas": ["CATEGORÍA 1", "CATEGORÍA 2", ...]}
+                """.formatted(listaTexto);
+
+        String aiResponse = chatModel.call(new Prompt(prompt))
+                .getResult().getOutput().getText();
+
+        String jsonStr = aiResponse.trim();
+        int start = jsonStr.indexOf('{');
+        int end = jsonStr.lastIndexOf('}');
+        if (start >= 0 && end > start) {
+            jsonStr = jsonStr.substring(start, end + 1);
+        }
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode json = mapper.readTree(jsonStr);
+            JsonNode arr = json.get("problematicas");
+            if (arr != null && arr.isArray()) {
+                List<String> resultado = new java.util.ArrayList<>();
+                for (JsonNode node : arr) {
+                    resultado.add(node.asText());
+                }
+                return resultado;
+            }
+            return List.of();
+        } catch (Exception e) {
+            throw new RuntimeException("Error al procesar respuesta de IA: " + e.getMessage());
+        }
+    }
+
     public Map<String, String> generarResumen(Long pacienteUniversitarioId) {
         PacienteUniversitario paciente = pacienteUniversitarioRepository.findById(pacienteUniversitarioId)
                 .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));

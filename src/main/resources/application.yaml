@@ -1,5 +1,9 @@
 server:
   port: 8081
+  tomcat:
+    max-swallow-size: 50MB
+    max-http-form-post-size: 50MB
+    max-parameter-count: 1000
 
 spring:
   application:
@@ -22,6 +26,11 @@ spring:
     enabled: true
     baseline-on-migrate: true
     baseline-version: 0
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
 
   jpa:
     hibernate:
