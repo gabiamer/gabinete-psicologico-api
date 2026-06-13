@@ -66,8 +66,8 @@ public class ActividadPsicologoController {
         LocalDateTime fechaHasta = LocalDateTime.parse(hasta + "T23:59:59");
         Long psicologoId = SecurityUtils.getCurrentPsicologoId();
         List<ActividadPsicologo> actividades = psicologoId == null
-                ? actividadRepository.findByFechaInicioGreaterThanEqualAndFechaFinLessThanEqual(fechaDesde, fechaHasta)
-                : actividadRepository.findByPsicologoIdAndFechaInicioGreaterThanEqualAndFechaFinLessThanEqual(psicologoId, fechaDesde, fechaHasta);
+                ? actividadRepository.findByFechaInicioLessThanEqualAndFechaFinGreaterThanEqual(fechaHasta, fechaDesde)
+                : actividadRepository.findByPsicologoIdAndFechaInicioLessThanEqualAndFechaFinGreaterThanEqual(psicologoId, fechaHasta, fechaDesde);
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
         response.put("data", actividades);

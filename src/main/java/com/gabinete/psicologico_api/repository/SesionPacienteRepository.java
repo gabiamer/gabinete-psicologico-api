@@ -13,6 +13,8 @@ public interface SesionPacienteRepository extends JpaRepository<SesionPaciente, 
 
     List<SesionPaciente> findByPacienteUniversitarioId(Long pacienteUniversitarioId);
 
+    List<SesionPaciente> findByPacienteUniversitarioIdAndFechaBetweenOrderByFechaAsc(Long pacienteUniversitarioId, LocalDateTime inicio, LocalDateTime fin);
+
     List<SesionPaciente> findByFechaBetween(LocalDateTime inicio, LocalDateTime fin);
 
     List<SesionPaciente> findByFechaBetweenAndPsicologoId(LocalDateTime inicio, LocalDateTime fin, Long psicologoId);

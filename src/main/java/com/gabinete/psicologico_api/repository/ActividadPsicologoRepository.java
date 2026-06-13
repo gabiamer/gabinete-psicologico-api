@@ -16,4 +16,9 @@ public interface ActividadPsicologoRepository extends JpaRepository<ActividadPsi
     List<ActividadPsicologo> findByPsicologoIdOrderByFechaInicioDesc(Long psicologoId);
     List<ActividadPsicologo> findByPsicologoIdAndFechaInicioGreaterThanEqualAndFechaFinLessThanEqual(
             Long psicologoId, LocalDateTime desde, LocalDateTime hasta);
+
+    // Overlap: actividad se solapa con el rango (fechaInicio <= hasta AND fechaFin >= desde)
+    List<ActividadPsicologo> findByFechaInicioLessThanEqualAndFechaFinGreaterThanEqual(LocalDateTime hasta, LocalDateTime desde);
+    List<ActividadPsicologo> findByPsicologoIdAndFechaInicioLessThanEqualAndFechaFinGreaterThanEqual(
+            Long psicologoId, LocalDateTime hasta, LocalDateTime desde);
 }

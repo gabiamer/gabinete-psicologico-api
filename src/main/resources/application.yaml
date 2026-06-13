@@ -15,13 +15,13 @@ spring:
         chat:
           options:
             model: gemini-2.5-flash
-  
+
   datasource:
-    url: jdbc:postgresql://localhost:5437/gabinete_psicologico
-    username: postgres
-    password: 1234567
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
-  
+
   flyway:
     enabled: true
     baseline-on-migrate: true
@@ -40,10 +40,14 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-  
+
 jwt:
-  secret: Y2xhdmUtc2VjcmV0YS1nYWJpbmV0ZS1wc2ljb2xvZ2ljby0yMDI2LXNlZ3VyYQ==
-  expiration: 86400000
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}
+
+admin:
+  username: ${ADMIN_USERNAME}
+  password: ${ADMIN_PASSWORD}
 
 logging:
   level:

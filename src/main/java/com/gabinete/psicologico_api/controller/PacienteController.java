@@ -3,8 +3,12 @@ package com.gabinete.psicologico_api.controller;
 
 import com.gabinete.psicologico_api.dto.EntrevistaCompletaDTO;
 import com.gabinete.psicologico_api.dto.PacienteUniversitarioDTO;
+import com.gabinete.psicologico_api.model.HistorialClinico;
 import com.gabinete.psicologico_api.model.PacienteUniversitario;
 import com.gabinete.psicologico_api.model.Psicologo;
+import com.gabinete.psicologico_api.model.SesionPaciente;
+import com.gabinete.psicologico_api.repository.EntrevistaPsicologicaRepository;
+import com.gabinete.psicologico_api.repository.HistorialClinicoRepository;
 import com.gabinete.psicologico_api.repository.PacienteUniversitarioRepository;
 import com.gabinete.psicologico_api.repository.PsicologoRepository;
 import com.gabinete.psicologico_api.repository.SesionPacienteRepository;
@@ -20,9 +24,11 @@ import com.gabinete.psicologico_api.model.EntrevistaPsicologica;
 import com.gabinete.psicologico_api.service.EntrevistaService;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/pacientes")
@@ -45,6 +51,12 @@ public class PacienteController {
 
     @Autowired
     private SesionPacienteRepository sesionPacienteRepository;
+
+    @Autowired
+    private HistorialClinicoRepository historialClinicoRepository;
+
+    @Autowired
+    private EntrevistaPsicologicaRepository entrevistaPsicologicaRepository;
 
     // Endpoint de búsqueda combinada (por término y/o fecha)
     @GetMapping("/buscar")
@@ -422,6 +434,68 @@ public class PacienteController {
             err.put("success", false);
             err.put("message", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(err);
+        }
+    }
+
+    // REPORTE INDIVIDUAL UNIFICADO — devuelve datos personales + sesiones + historial en una sola llamada
+    @GetMapping("/universitario/{id}/reporte")
+    public ResponseEntity<Map<String, Object>> obtenerReporte(
+            @PathVariable Long id,
+            @RequestParam(required = false) String desde,
+            @RequestParam(required = false) String hasta) {
+        try {
+            PacienteUniversitario pu = pacienteUniversitarioRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
+
+            // Obtener sesiones — filtradas por rango si se proporcionan
+            List<SesionPaciente> sesiones;
+            if (desde != null && hasta != null) {
+                LocalDateTime ini = LocalDateTime.parse(desde + "T00:00:00");
+                LocalDateTime fin = LocalDateTime.parse(hasta + "T23:59:59");
+                sesiones = sesionPacienteRepository
+                        .findByPacienteUniversitarioIdAndFechaBetweenOrderByFechaAsc(id, ini, fin);
+            } else {
+                sesiones = sesionPacienteRepository.findByPacienteUniversitarioId(id);
+                sesiones.sort((a, b) -> a.getFecha().compareTo(b.getFecha()));
+            }
+
+            // Para la entrevista: buscar en TODAS las sesiones del paciente (no solo las del rango)
+            List<SesionPaciente> todasLasSesiones = sesionPacienteRepository.findByPacienteUniversitarioId(id);
+            todasLasSesiones.sort((a, b) -> a.getFecha().compareTo(b.getFecha()));
+
+            // Buscar entrevista en la primera sesión con entrevista (histórico completo)
+            EntrevistaPsicologica entrevista = null;
+            for (SesionPaciente s : todasLasSesiones) {
+                Optional<EntrevistaPsicologica> ep = entrevistaPsicologicaRepository.findBySesionPacienteId(s.getId());
+                if (ep.isPresent()) {
+                    entrevista = ep.get();
+                    break;
+                }
+            }
+
+            // Mapear sesiones del período con su historial clínico
+            List<Map<String, Object>> sesionesMapeadas = new java.util.ArrayList<>();
+            for (SesionPaciente s : sesiones) {
+                Optional<HistorialClinico> hOpt = historialClinicoRepository.findBySesionPacienteId(s.getId());
+                Map<String, Object> sesionMap = new HashMap<>();
+                sesionMap.put("id", s.getId());
+                sesionMap.put("fecha", s.getFecha());
+                sesionMap.put("horaInicio", s.getHoraInicio());
+                sesionMap.put("horaFin", s.getHoraFin());
+                sesionMap.put("duracionMinutos", s.getDuracionMinutos());
+                sesionMap.put("historialClinico", hOpt.orElse(null));
+                sesionesMapeadas.add(sesionMap);
+            }
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("pacienteUniversitario", pu);
+            data.put("entrevista", entrevista);
+            data.put("sesiones", sesionesMapeadas);
+
+            return ResponseEntity.ok(Map.of("success", true, "data", data));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", e.getMessage()));
         }
     }
 

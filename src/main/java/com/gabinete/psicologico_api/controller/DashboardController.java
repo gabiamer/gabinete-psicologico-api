@@ -234,6 +234,79 @@ public class DashboardController {
         }
     }
 
+    /**
+     * Orientaciones filtradas por período: pacientes externos con ≥1 orientación en [desde, hasta].
+     * numeroOrientaciones = orientaciones del período solamente.
+     */
+    @GetMapping("/orientaciones-periodo")
+    public ResponseEntity<?> obtenerOrientacionesPeriodo(
+            @RequestParam String desde,
+            @RequestParam String hasta) {
+        try {
+            Long psicologoId = SecurityUtils.getCurrentPsicologoId();
+            LocalDate ini = LocalDate.parse(desde);
+            LocalDate fin = LocalDate.parse(hasta);
+
+            List<OrientacionVocacional> orientacionesEnPeriodo = psicologoId == null
+                    ? orientacionVocacionalRepository.findByFechaBetween(ini, fin)
+                    : orientacionVocacionalRepository.findByFechaBetweenAndPacienteExternoPsicologoId(ini, fin, psicologoId);
+
+            // Agrupar por paciente externo
+            Map<Long, List<OrientacionVocacional>> porPaciente = new LinkedHashMap<>();
+            for (OrientacionVocacional o : orientacionesEnPeriodo) {
+                if (o.getPacienteExterno() == null) continue;
+                porPaciente.computeIfAbsent(o.getPacienteExterno().getId(), k -> new ArrayList<>()).add(o);
+            }
+
+            List<Map<String, Object>> resultado = new ArrayList<>();
+
+            for (Map.Entry<Long, List<OrientacionVocacional>> entry : porPaciente.entrySet()) {
+                Long peId = entry.getKey();
+                List<OrientacionVocacional> orisPac = entry.getValue();
+
+                Optional<PacienteExterno> peOpt = pacienteExternoRepository.findById(peId);
+                if (peOpt.isEmpty()) continue;
+                PacienteExterno pe = peOpt.get();
+
+                Map<String, Object> fila = new HashMap<>();
+                fila.put("pacienteExternoId", pe.getId());
+
+                Person person = pe.getPaciente().getPerson();
+                String inicial = person.getPrimerNombre() != null && !person.getPrimerNombre().isEmpty()
+                        ? person.getPrimerNombre().substring(0, 1).toUpperCase() + "." : "";
+                String apellidos = (person.getApellidoPaterno() != null ? person.getApellidoPaterno() : "")
+                        + (person.getApellidoMaterno() != null ? " " + person.getApellidoMaterno() : "");
+                fila.put("estudianteNombre", (inicial + " " + apellidos).trim());
+                fila.put("nombreCompleto", ((person.getPrimerNombre() != null ? person.getPrimerNombre() : "") + " " +
+                        (person.getSegundoNombre() != null ? person.getSegundoNombre() : "") + " " +
+                        (person.getApellidoPaterno() != null ? person.getApellidoPaterno() : "") + " " +
+                        (person.getApellidoMaterno() != null ? person.getApellidoMaterno() : "")).trim());
+
+                fila.put("escuela", pe.getEscuela());
+                fila.put("anio", pe.getAnio());
+                fila.put("correo", pe.getCorreo());
+                fila.put("edad", pe.getPaciente().getEdad());
+
+                fila.put("numeroOrientaciones", orisPac.size());
+                orisPac.sort((a, b) -> b.getFecha().compareTo(a.getFecha()));
+                fila.put("ultimaOrientacionFecha", orisPac.get(0).getFecha());
+
+                resultado.add(fila);
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", resultado);
+            response.put("total", resultado.size());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", "Error al obtener orientaciones por período: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
+
     @GetMapping("/orientaciones")
     public ResponseEntity<?> obtenerOrientaciones() {
         try {
