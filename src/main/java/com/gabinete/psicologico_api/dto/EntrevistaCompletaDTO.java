@@ -63,4 +63,7 @@ public class EntrevistaCompletaDTO {
     private String proximaSesionFecha;
     private String proximaSesionHora;
     private String historiaClinica;
+
+    // Fecha histórica opcional (formato "yyyy-MM-dd"). Si se omite, se usa la fecha actual.
+    private String fechaRegistro;
 }

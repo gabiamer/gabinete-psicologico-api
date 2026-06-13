@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,7 +41,11 @@ public class EntrevistaService {
         SesionPaciente sesion = new SesionPaciente();
         sesion.setPacienteUniversitario(pu);
         sesion.setPsicologo(pu.getPsicologo());
-        sesion.setFecha(LocalDateTime.now());
+        if (dto.getFechaRegistro() != null && !dto.getFechaRegistro().isEmpty()) {
+            sesion.setFecha(LocalDate.parse(dto.getFechaRegistro()).atStartOfDay());
+        } else {
+            sesion.setFecha(LocalDateTime.now());
+        }
         sesionPacienteRepository.save(sesion);
 
         // 2. Historia familiar (JSONB)
@@ -122,6 +127,9 @@ public class EntrevistaService {
         entrevista.setTotalScoreDepresion(dto.getTotalScoreDepresion());
         entrevista.setHabitos(habitosJson);
         entrevista.setAcuerdos(acuerdosJson);
+        if (dto.getFechaRegistro() != null && !dto.getFechaRegistro().isEmpty()) {
+            entrevista.setFecha(LocalDate.parse(dto.getFechaRegistro()));
+        }
         entrevistaPsicologicaRepository.save(entrevista);
 
         // 8. Guardar historial clinico (primera sesion)
@@ -132,6 +140,9 @@ public class EntrevistaService {
         historial.setGravedad(dto.getGravedad());
         if (dto.getTipologias() != null) {
             historial.setTipologia(objectMapper.writeValueAsString(dto.getTipologias()));
+        }
+        if (dto.getFechaRegistro() != null && !dto.getFechaRegistro().isEmpty()) {
+            historial.setFecha(LocalDate.parse(dto.getFechaRegistro()).atStartOfDay());
         }
         historialClinicoRepository.save(historial);
 

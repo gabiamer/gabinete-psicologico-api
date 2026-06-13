@@ -49,4 +49,7 @@ public class OrientacionVocacionalDTO {
     private String visionCincoAnos;
     private String tipoTrabajosDeseados;
     private String observacionesEntrevistador;
+
+    // Fecha histórica opcional (formato "yyyy-MM-dd"). Si se omite, se usa la fecha actual.
+    private String fechaRegistro;
 }

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,7 +88,10 @@ public class OrientacionVocacionalService {
         orientacion.setPacienteExterno(paciente);
         orientacion.setRespuestas(respuestasJson);
         orientacion.setObservaciones(dto.getObservacionesEntrevistador());
-        
+        if (dto.getFechaRegistro() != null && !dto.getFechaRegistro().isEmpty()) {
+            orientacion.setFecha(LocalDate.parse(dto.getFechaRegistro()));
+        }
+
         OrientacionVocacional guardado = orientacionRepository.save(orientacion);
         System.out.println("=== Orientación Vocacional guardada con ID: " + guardado.getId());
         

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -168,6 +169,9 @@ public class PacienteExternoService {
         orientacion.setPacienteExterno(pe);
         orientacion.setRespuestas(mapper.writeValueAsString(respuestas));
         orientacion.setObservaciones(dto.getObservacionesEntrevistador());
+        if (dto.getFechaRegistro() != null && !dto.getFechaRegistro().isEmpty()) {
+            orientacion.setFecha(LocalDate.parse(dto.getFechaRegistro()));
+        }
         orientacionVocacionalRepository.save(orientacion);
 
         return pe;

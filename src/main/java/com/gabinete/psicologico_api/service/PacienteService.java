@@ -260,7 +260,11 @@ public class PacienteService {
         SesionPaciente sesion = new SesionPaciente();
         sesion.setPacienteUniversitario(pu);
         sesion.setPsicologo(pu.getPsicologo());
-        sesion.setFecha(LocalDateTime.now());
+        if (dto.getFechaRegistro() != null && !dto.getFechaRegistro().isEmpty()) {
+            sesion.setFecha(LocalDate.parse(dto.getFechaRegistro()).atStartOfDay());
+        } else {
+            sesion.setFecha(LocalDateTime.now());
+        }
         sesion = sesionPacienteRepository.save(sesion);
 
         // ── 6. Historia familiar ──────────────────────────────────────────────
@@ -317,6 +321,9 @@ public class PacienteService {
         entrevista.setTotalScoreDepresion(dto.getTotalScoreDepresion());
         entrevista.setHabitos(mapper.writeValueAsString(habitos));
         entrevista.setAcuerdos(mapper.writeValueAsString(acuerdos));
+        if (dto.getFechaRegistro() != null && !dto.getFechaRegistro().isEmpty()) {
+            entrevista.setFecha(LocalDate.parse(dto.getFechaRegistro()));
+        }
         entrevistaPsicologicaRepository.save(entrevista);
 
         // ── 11. HistorialClinico ──────────────────────────────────────────────
@@ -327,6 +334,9 @@ public class PacienteService {
         historial.setGravedad(dto.getGravedad());
         if (dto.getTipologias() != null) {
             historial.setTipologia(mapper.writeValueAsString(dto.getTipologias()));
+        }
+        if (dto.getFechaRegistro() != null && !dto.getFechaRegistro().isEmpty()) {
+            historial.setFecha(LocalDate.parse(dto.getFechaRegistro()).atStartOfDay());
         }
         historialClinicoRepository.save(historial);
 
